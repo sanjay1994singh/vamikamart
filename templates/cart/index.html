@@ -8,9 +8,16 @@
       {% if cart %}
         {% for item in cart.items.all %}
           <div class="line-item">
-            <strong>{{ item.product.name }}</strong>
-            <span>Qty {{ item.quantity }}</span>
-            <span>₹{{ item.product.selling_price }}</span>
+            <div>
+              <strong>{{ item.product.name }}</strong>
+              <span class="muted d-block">₹{{ item.product.selling_price }}</span>
+            </div>
+            <div class="cart-controls">
+              <button class="qty-button js-cart-qty" type="button" data-item="{{ item.id }}" data-quantity="{{ item.quantity|add:'-1' }}">-</button>
+              <span>Qty {{ item.quantity }}</span>
+              <button class="qty-button js-cart-qty" type="button" data-item="{{ item.id }}" data-quantity="{{ item.quantity|add:'1' }}">+</button>
+              <button class="remove-button js-cart-remove" type="button" data-item="{{ item.id }}">Remove</button>
+            </div>
           </div>
         {% empty %}
           <p>Your cart is empty.</p>

@@ -86,7 +86,7 @@ class Product(models.Model):
             raise ValidationError("Active products require a category.")
 
     def get_absolute_url(self):
-        return reverse("product-detail", kwargs={"slug": self.slug})
+        return f"/product/{self.slug}/"
 
     @property
     def discount_percent(self):

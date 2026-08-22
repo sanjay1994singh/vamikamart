@@ -1,34 +1,155 @@
 {% extends "base.html" %}
-{% block title %}Commerce Home{% endblock %}
+{% load static %}
+{% load store_assets %}
+{% block title %}VamikaMart - Easy Grocery Shopping{% endblock %}
+{% block meta_description %}Shop groceries, fresh produce, dairy, snacks and home essentials from VamikaMart.{% endblock %}
 {% block content %}
-<section class="home-hero">
+<section class="store-shell">
   <div class="container">
-    <h1>Shop fresh picks for your home, work and everyday life</h1>
-    <p>Products, inventory, cart, checkout and orders are powered by one Django commerce engine.</p>
-    <a class="btn btn-primary" href="{% url 'product-list' %}">Browse Products</a>
-  </div>
-</section>
-<section class="container py-5">
-  <div class="section-heading"><h2>Featured Categories</h2></div>
-  <div class="grid">
-    {% for category in categories %}
-      <a class="tile" href="{% url 'product-list' %}?category={{ category.id }}">{{ category.name }}</a>
-    {% empty %}
-      <p>No categories yet. Run seed data after migrations.</p>
-    {% endfor %}
-  </div>
-</section>
-<section class="container py-5">
-  <div class="section-heading"><h2>Featured Products</h2></div>
-  <div class="product-grid">
-    {% for product in featured_products %}
-      <a class="product-card" href="{{ product.get_absolute_url }}">
-        <strong>{{ product.name }}</strong>
-        <span>₹{{ product.selling_price }}</span>
-      </a>
-    {% empty %}
-      <p>No products yet. Run seed data after migrations.</p>
-    {% endfor %}
+    <section class="market-hero">
+      <div class="hero-copy">
+        <p class="eyebrow">VamikaMart grocery desk</p>
+        <h1>Your daily basket, arranged in minutes.</h1>
+        <p>Build a clean weekly basket from fresh produce, dairy, pantry staples, snacks and home needs without hunting through clutter.</p>
+        <div class="hero-actions">
+          <a class="primary-action" href="/products/">Start shopping</a>
+          <a class="secondary-action" href="#categories">Browse categories</a>
+        </div>
+      </div>
+      <div class="basket-board" aria-hidden="true">
+        <img src="{% static 'img/store/vamikamart-hero-grocery.webp' %}" alt="">
+        <div class="basket-card basket-main">
+          <span>Weekly basket</span>
+          <strong>18 items</strong>
+          <small>Milk, rice, fruits, cleaner</small>
+        </div>
+        <div class="basket-card basket-fresh"><span>Fresh</span><strong>7 picks</strong></div>
+        <div class="basket-card basket-home"><span>Home</span><strong>4 needs</strong></div>
+        <div class="basket-card basket-save"><span>Saved</span><strong>₹210</strong></div>
+      </div>
+    </section>
+
+    <section class="shop-section" id="categories">
+      <div class="section-heading">
+        <div>
+          <h2>Pick a department</h2>
+          <p>Shortcuts for the products families ask for most.</p>
+        </div>
+        <a href="/products/">View all</a>
+      </div>
+      <div class="category-grid">
+        {% if show_dummy_storefront %}
+          {% for category in dummy_categories %}
+            <a class="category-tile" href="/products/">
+              <img src="{% static category.image|store_asset:'category' %}" alt="{{ category.name }}">
+              <strong>{{ category.name }}</strong>
+            </a>
+          {% endfor %}
+        {% else %}
+          {% for category in categories %}
+            <a class="category-tile" href="/products/?category={{ category.id }}">
+              {% if category.image %}
+                <img src="{{ category.image.url }}" alt="{{ category.name }}">
+              {% else %}
+                <span class="category-art">{{ category.name|slice:":2"|upper }}</span>
+              {% endif %}
+              <strong>{{ category.name }}</strong>
+            </a>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="shop-section">
+      <div class="section-heading">
+        <div>
+          <h2>Ready for your basket</h2>
+          <p>Dummy shelf shown until your real catalogue has enough featured items.</p>
+        </div>
+        <a href="/products/">Open shop</a>
+      </div>
+      <div class="quick-product-grid">
+        {% if show_dummy_storefront %}
+          {% for product in dummy_products %}
+            <article class="quick-product-card">
+              <div class="product-art">
+                <img src="{% static product.image|store_asset:'product' %}" alt="{{ product.name }}">
+              </div>
+              <small>{{ product.size }}</small>
+              <h3>{{ product.name }}</h3>
+              <div class="quick-price">
+                <strong>₹{{ product.price }}</strong>
+                {% if product.mrp > product.price %}<del>₹{{ product.mrp }}</del>{% endif %}
+              </div>
+              {% if product.product_id %}
+                <div class="product-cart-control js-product-cart" data-product="{{ product.product_id }}">
+                  <button class="add-button js-add-cart" type="button" data-product="{{ product.product_id }}">Add</button>
+                  <div class="inline-qty" hidden>
+                    <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
+                    <span><strong class="js-card-qty">0</strong></span>
+                    <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+                  </div>
+                </div>
+              {% else %}
+                <a class="add-button" href="/products/">View</a>
+              {% endif %}
+            </article>
+          {% endfor %}
+        {% else %}
+          {% for product in featured_products %}
+            <article class="quick-product-card">
+              <a class="product-art" href="{{ product.get_absolute_url }}">
+                {% with image=product.images.all.0 %}
+                  {% if image %}<img src="{{ image.image.url }}" alt="{{ product.name }}">{% else %}<span>{{ product.category.name|slice:":5"|upper }}</span>{% endif %}
+                {% endwith %}
+              </a>
+              <small>{{ product.category.name }}</small>
+              <h3>{{ product.name }}</h3>
+              <div class="quick-price">
+                <strong>₹{{ product.selling_price }}</strong>
+                {% if product.discount_percent %}<del>₹{{ product.mrp }}</del>{% endif %}
+              </div>
+              <div class="product-cart-control js-product-cart" data-product="{{ product.id }}">
+                <button class="add-button js-add-cart" type="button" data-product="{{ product.id }}">Add</button>
+                  <div class="inline-qty" hidden>
+                    <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
+                    <span><strong class="js-card-qty">0</strong></span>
+                    <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+                  </div>
+              </div>
+            </article>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </section>
+
+    <section class="promise-strip" aria-label="Shopping benefits">
+      {% for promise in store_promises %}
+        <a class="promise-card" href="/products/">
+          <img src="{% static promise.image|store_asset:'promise' %}" alt="">
+          <strong>{{ promise.label }}</strong>
+          <span>{{ promise.text }}</span>
+        </a>
+      {% endfor %}
+    </section>
+
+    <section class="shopping-guide">
+      <div>
+        <span>1</span>
+        <strong>Search or choose a department</strong>
+        <p>Start with what you need most: breakfast, pantry, snacks or cleaning.</p>
+      </div>
+      <div>
+        <span>2</span>
+        <strong>Add essentials to cart</strong>
+        <p>Clear prices and sizes help customers compare quickly.</p>
+      </div>
+      <div>
+        <span>3</span>
+        <strong>Checkout without confusion</strong>
+        <p>Orders, support, returns and wishlist stay one tap away.</p>
+      </div>
+    </section>
   </div>
 </section>
 {% endblock %}

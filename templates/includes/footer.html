@@ -1,6 +1,30 @@
 <footer class="site-footer">
-  <div class="container d-flex flex-column flex-md-row justify-content-between gap-2">
-    <span>Commerce engine for web and future mobile clients.</span>
-    <span>Secure checkout, inventory, orders and support.</span>
+  <div class="container footer-grid">
+    <div>
+      <h2>Useful Links</h2>
+      <div class="footer-links">
+        <a href="/products/">Products</a>
+        <a href="{% url 'cart' %}">Cart</a>
+        <a href="{% url 'wishlist' %}">Wishlist</a>
+        <a href="{% url 'orders' %}">Orders</a>
+        <a href="{% url 'support' %}">Support</a>
+        <a href="{% url 'returns' %}">Returns</a>
+      </div>
+    </div>
+    <div>
+      <h2>Categories</h2>
+      <div class="footer-links footer-categories">
+        <span>Fruits & Vegetables</span>
+        <span>Dairy, Bread & Eggs</span>
+        <span>Snacks & Munchies</span>
+        <span>Atta, Rice & Dal</span>
+        <span>Baby Care</span>
+        <span>Cleaning Essentials</span>
+      </div>
+    </div>
+    <div>
+      <h2>VamikaMart</h2>
+      <p>Daily essentials, grocery staples and household needs delivered quickly with secure checkout.</p>
+    </div>
   </div>
 </footer>

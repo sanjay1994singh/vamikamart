@@ -1,18 +1,62 @@
 {% extends "base.html" %}
-{% block title %}Products{% endblock %}
+{% load static %}
+{% load store_assets %}
+{% block title %}Shop Groceries - VamikaMart{% endblock %}
 {% block content %}
-<section class="container py-4">
-  <h1 class="page-title">Products</h1>
-  <div class="product-grid">
-    {% for product in object_list %}
-      <a class="product-card" href="{{ product.get_absolute_url }}">
-        <strong>{{ product.name }}</strong>
-        <span class="muted">{{ product.brand.name|default:"" }}</span>
-        <span><del>₹{{ product.mrp }}</del> ₹{{ product.selling_price }}</span>
-      </a>
-    {% empty %}
-      <p>No matching products.</p>
-    {% endfor %}
+<section class="container shop-page py-4">
+  <div class="shop-page-head">
+    <div>
+      <p class="eyebrow">VamikaMart shelf</p>
+      <h1 class="page-title">Shop groceries</h1>
+      <p>Search and browse essentials without API or owner tools in the customer view.</p>
+    </div>
+    <form class="shelf-search" action="/products/">
+      <input name="q" type="search" value="{{ request.GET.q }}" placeholder="Search products">
+      <button type="submit">Search</button>
+    </form>
+  </div>
+  <div class="quick-product-grid">
+    {% if show_dummy_storefront %}
+      {% for product in dummy_products %}
+        <article class="quick-product-card">
+          <div class="product-art">
+            <img src="{% static product.image|store_asset:'product' %}" alt="{{ product.name }}">
+          </div>
+          <small>{{ product.size }}</small>
+          <h3>{{ product.name }}</h3>
+          <div class="quick-price"><strong>₹{{ product.price }}</strong>{% if product.mrp > product.price %}<del>₹{{ product.mrp }}</del>{% endif %}</div>
+          {% if product.product_id %}
+            <div class="product-cart-control js-product-cart" data-product="{{ product.product_id }}">
+              <button class="add-button js-add-cart" type="button" data-product="{{ product.product_id }}">Add</button>
+              <div class="inline-qty" hidden>
+                <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
+                <span><strong class="js-card-qty">0</strong></span>
+                <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+              </div>
+            </div>
+          {% else %}
+            <a class="add-button" href="/products/">View</a>
+          {% endif %}
+        </article>
+      {% endfor %}
+    {% else %}
+      {% for product in object_list %}
+        <article class="quick-product-card">
+          <a class="product-art" href="{{ product.get_absolute_url }}"><span>{{ product.category.name|slice:":5"|upper }}</span></a>
+          <small>{{ product.brand.name|default:product.category.name }}</small>
+          <h3>{{ product.name }}</h3>
+          <div class="quick-price"><strong>₹{{ product.selling_price }}</strong>{% if product.discount_percent %}<del>₹{{ product.mrp }}</del>{% endif %}</div>
+          <div class="product-cart-control js-product-cart" data-product="{{ product.id }}">
+            <button class="add-button js-add-cart" type="button" data-product="{{ product.id }}">Add</button>
+            <div class="inline-qty" hidden>
+              <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
+              <span><strong class="js-card-qty">0</strong></span>
+              <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    {% endif %}
   </div>
 </section>
 {% endblock %}

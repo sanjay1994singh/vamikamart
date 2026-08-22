@@ -9,7 +9,7 @@
       {% for address in addresses %}
         <label class="line-item"><input type="radio" name="address_id" value="{{ address.id }}" {% if forloop.first %}checked{% endif %}> {{ address.full_name }}, {{ address.city }} {{ address.pin_code }}</label>
       {% empty %}
-        <p>Add an address from the account API/admin before placing an order.</p>
+        <p>Add a delivery address from your account before placing an order.</p>
       {% endfor %}
       <h2 class="mt-4">Payment</h2>
       <select class="form-select js-payment-method" style="max-width: 260px;">
