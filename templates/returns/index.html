@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Returns{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>Returns</h1>
+  {% for request in object_list %}
+    <div class="line-item"><strong>{{ request.order.order_number }}</strong><span>{{ request.status }}</span></div>
+  {% empty %}<p>No return requests.</p>{% endfor %}
+</section>
+{% endblock %}

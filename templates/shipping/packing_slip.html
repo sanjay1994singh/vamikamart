@@ -1,0 +1,15 @@
+<!doctype html>
+<html>
+<head><title>Packing Slip {{ order.order_number }}</title></head>
+<body>
+  <h1>Packing Slip</h1>
+  <p>Order: {{ order.order_number }}</p>
+  <p>Ship to: {{ order.shipping_address.full_name }}, {{ order.shipping_address.city }} {{ order.shipping_address.pin_code }}</p>
+  <table border="1" cellspacing="0" cellpadding="6">
+    <tr><th>SKU</th><th>Product</th><th>Qty</th></tr>
+    {% for item in order.items.all %}
+      <tr><td>{{ item.sku }}</td><td>{{ item.product_name }}</td><td>{{ item.quantity }}</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

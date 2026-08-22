@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ object.name }}{% endblock %}
+{% block meta_description %}{{ object.short_description }}{% endblock %}
+{% block content %}
+<section class="container product-detail py-5">
+  <div>
+    <div class="image-stage">
+      {% with image=object.images.first %}
+        {% if image %}<img src="{{ image.image.url }}" alt="{{ image.alt_text|default:object.name }}">{% else %}<span>No image</span>{% endif %}
+      {% endwith %}
+    </div>
+  </div>
+  <div>
+    <h1>{{ object.name }}</h1>
+    <p>{{ object.short_description }}</p>
+    <p class="price"><del>₹{{ object.mrp }}</del> ₹{{ object.selling_price }} <span>{{ object.discount_percent }}% off</span></p>
+    <label class="form-label" for="qty">Quantity</label>
+    <input id="qty" class="form-control js-quantity mb-3" type="number" min="1" value="1" style="max-width: 120px;">
+    <button class="btn btn-primary js-add-cart" data-product="{{ object.id }}">Add To Cart</button>
+    <button class="btn btn-outline-secondary js-add-wishlist" data-product="{{ object.id }}">Wishlist</button>
+    <div class="share-row mt-3">
+      <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" rel="noopener">Facebook</a>
+      <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}" target="_blank" rel="noopener">Telegram</a>
+      <button class="btn btn-sm btn-outline-secondary js-copy-link" data-url="{{ request.build_absolute_uri }}">Copy Link</button>
+    </div>
+    <hr>
+    <h2>Specifications</h2>
+    {% for spec in object.specifications.all %}
+      <p><strong>{{ spec.name }}:</strong> {{ spec.value }}</p>
+    {% empty %}
+      <p>Specifications will appear here.</p>
+    {% endfor %}
+    <hr>
+    <h2>Reviews</h2>
+    {% for review in object.reviews.all %}
+      {% if review.approved %}
+        <div class="line-item"><strong>{{ review.rating }}/5 {{ review.title }}</strong><p>{{ review.body }}</p></div>
+      {% endif %}
+    {% empty %}
+      <p>No reviews yet.</p>
+    {% endfor %}
+    {% if user.is_authenticated %}
+      <div class="summary mt-3">
+        <h3>Add Review</h3>
+        <input class="form-control mb-2 js-review-rating" type="number" min="1" max="5" value="5">
+        <input class="form-control mb-2 js-review-title" placeholder="Title">
+        <textarea class="form-control mb-2 js-review-body" placeholder="Review"></textarea>
+        <button class="btn btn-primary js-submit-review" data-product="{{ object.id }}">Submit Review</button>
+      </div>
+    {% endif %}
+  </div>
+</section>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ object.name|escapejs }}",
+  "sku": "{{ object.sku|escapejs }}",
+  "description": "{{ object.short_description|escapejs }}",
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "INR",
+    "price": "{{ object.selling_price }}",
+    "availability": "https://schema.org/InStock",
+    "url": "{{ request.build_absolute_uri }}"
+  }
+}
+</script>
+{% endblock %}

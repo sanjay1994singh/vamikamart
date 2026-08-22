@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Order {{ object.order_number }}{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>{{ object.order_number }}</h1>
+  <p>Status: {{ object.status }}</p>
+  {% if object.shipment %}
+    <p>Tracking: <a href="{{ object.shipment.tracking_url }}">{{ object.shipment.awb|default:"Pending" }}</a></p>
+  {% endif %}
+  {% for item in object.items.all %}
+    <div class="line-item">
+      <strong>{{ item.product_name }}</strong>
+      <span>{{ item.sku }}</span>
+      <span>Qty {{ item.quantity }}</span>
+      <span>₹{{ item.line_total }}</span>
+    </div>
+  {% endfor %}
+  {% if object.status == "pending" or object.status == "confirmed" %}
+    <button class="btn btn-outline-danger js-cancel-order" data-order="{{ object.id }}">Cancel Order</button>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,14 @@
+<!doctype html>
+<html>
+<head><title>Manifest {{ manifest.manifest_number }}</title></head>
+<body>
+  <h1>Shipping Manifest</h1>
+  <p>{{ manifest.manifest_number }} - {{ manifest.carrier }}</p>
+  <table border="1" cellspacing="0" cellpadding="6">
+    <tr><th>Order</th><th>AWB</th><th>Status</th></tr>
+    {% for shipment in manifest.shipments.all %}
+      <tr><td>{{ shipment.order.order_number }}</td><td>{{ shipment.awb }}</td><td>{{ shipment.status }}</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Wishlist{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>Wishlist</h1>
+  <div class="product-grid">
+    {% for item in object_list %}
+      <a class="product-card" href="{{ item.product.get_absolute_url }}">
+        <strong>{{ item.product.name }}</strong>
+        <span>₹{{ item.product.selling_price }}</span>
+      </a>
+    {% empty %}
+      <p>Your wishlist is empty.</p>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

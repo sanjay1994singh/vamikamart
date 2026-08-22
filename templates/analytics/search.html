@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Owner Search{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>Owner Search</h1>
+  <form><input class="form-control" name="q" value="{{ query }}" placeholder="Search products, orders, customers"></form>
+  <h2>Products</h2>{% for item in products %}<div class="line-item">{{ item.name }} <span>{{ item.sku }}</span></div>{% empty %}<p>No products.</p>{% endfor %}
+  <h2>Orders</h2>{% for item in orders %}<div class="line-item">{{ item.order_number }} <span>{{ item.status }}</span></div>{% empty %}<p>No orders.</p>{% endfor %}
+  <h2>Customers</h2>{% for item in customers %}<div class="line-item">{{ item.email }} <span>{{ item.mobile_number }}</span></div>{% empty %}<p>No customers.</p>{% endfor %}
+</section>
+{% endblock %}

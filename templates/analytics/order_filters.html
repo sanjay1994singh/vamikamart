@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Order Filters{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>Order Filters</h1>
+  <form><input class="form-control" name="status" value="{{ status|default:'' }}" placeholder="pending, confirmed, shipped"></form>
+  {% for order in orders %}
+    <div class="line-item"><strong>{{ order.order_number }}</strong><span>{{ order.status }}</span><span>₹{{ order.grand_total }}</span></div>
+  {% empty %}<p>No orders.</p>{% endfor %}
+</section>
+{% endblock %}

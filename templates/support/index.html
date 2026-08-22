@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Support{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>Support Tickets</h1>
+  {% for ticket in object_list %}
+    <div class="line-item"><strong>{{ ticket.subject }}</strong><span>{{ ticket.status }}</span></div>
+  {% empty %}<p>No support tickets.</p>{% endfor %}
+</section>
+{% endblock %}

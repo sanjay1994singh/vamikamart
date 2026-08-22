@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>Notifications</h1>
+  {% for item in object_list %}
+    <div class="line-item"><strong>{{ item.title }}</strong><span>{{ item.created_at }}</span><p>{{ item.body }}</p></div>
+  {% empty %}<p>No notifications.</p>{% endfor %}
+</section>
+{% endblock %}

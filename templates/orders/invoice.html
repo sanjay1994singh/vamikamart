@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<head><title>Invoice {{ invoice.invoice_number }}</title></head>
+<body>
+  <h1>Tax Invoice</h1>
+  <p><strong>Invoice:</strong> {{ invoice.invoice_number }}</p>
+  <p><strong>Order:</strong> {{ order.order_number }}</p>
+  <p><strong>Customer:</strong> {{ order.user.email }}</p>
+  <table border="1" cellspacing="0" cellpadding="6">
+    <tr><th>SKU</th><th>Product</th><th>Qty</th><th>Unit</th><th>Total</th></tr>
+    {% for item in order.items.all %}
+      <tr><td>{{ item.sku }}</td><td>{{ item.product_name }}</td><td>{{ item.quantity }}</td><td>{{ item.unit_price }}</td><td>{{ item.line_total }}</td></tr>
+    {% endfor %}
+  </table>
+  <p>Subtotal: {{ order.subtotal }}</p>
+  <p>Discount: {{ order.coupon_discount }}</p>
+  <p>Tax: {{ order.tax }}</p>
+  <p>Shipping: {{ order.shipping }}</p>
+  <h2>Total: {{ order.grand_total }}</h2>
+</body>
+</html>

@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+<head><title>Shipping Label {{ order.order_number }}</title></head>
+<body>
+  <h1>Shipping Label</h1>
+  <p><strong>Order:</strong> {{ order.order_number }}</p>
+  <p><strong>To:</strong> {{ order.shipping_address.full_name }}</p>
+  <p>{{ order.shipping_address.house }}, {{ order.shipping_address.street }}</p>
+  <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} - {{ order.shipping_address.pin_code }}</p>
+  <p><strong>Phone:</strong> {{ order.shipping_address.phone }}</p>
+</body>
+</html>

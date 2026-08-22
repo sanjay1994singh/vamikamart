@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Owner Dashboard{% endblock %}
+{% block content %}
+<section class="container py-5">
+  <h1>Owner Dashboard</h1>
+  <div class="product-grid">
+    <div class="summary"><strong>Orders</strong><p>{{ order_count }}</p></div>
+    <div class="summary"><strong>Revenue</strong><p>₹{{ revenue }}</p></div>
+    <div class="summary"><strong>Paid</strong><p>₹{{ paid_total }}</p></div>
+    <div class="summary"><strong>Pending Orders</strong><p>{{ pending_orders }}</p></div>
+  </div>
+</section>
+{% endblock %}
