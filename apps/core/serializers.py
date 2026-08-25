@@ -20,8 +20,19 @@ class ApiResponseMixin:
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["id", "email", "first_name", "last_name", "mobile_number", "role", "email_verified", "mobile_verified"]
-        read_only_fields = ["role", "email_verified", "mobile_verified"]
+        fields = [
+            "id",
+            "email",
+            "first_name",
+            "last_name",
+            "mobile_number",
+            "date_of_birth",
+            "gender",
+            "role",
+            "email_verified",
+            "mobile_verified",
+        ]
+        read_only_fields = ["email", "role", "email_verified", "mobile_verified"]
 
 
 class RegisterSerializer(serializers.ModelSerializer):

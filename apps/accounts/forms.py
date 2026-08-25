@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User
+from .models import Address, User
 
 
 class CustomerRegistrationForm(UserCreationForm):
@@ -16,3 +16,34 @@ class CustomerRegistrationForm(UserCreationForm):
         if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("A user with this email already exists.")
         return email
+
+
+class ProfileUpdateForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "mobile_number", "date_of_birth", "gender")
+        widgets = {
+            "date_of_birth": forms.DateInput(attrs={"type": "date"}),
+        }
+
+
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = (
+            "full_name",
+            "phone",
+            "alternate_phone",
+            "house",
+            "street",
+            "landmark",
+            "locality",
+            "city",
+            "district",
+            "state",
+            "country",
+            "pin_code",
+            "address_type",
+            "default_shipping",
+            "default_billing",
+        )

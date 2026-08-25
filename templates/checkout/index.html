@@ -7,10 +7,37 @@
     <div>
       <h2>Delivery Address</h2>
       {% for address in addresses %}
-        <label class="line-item"><input type="radio" name="address_id" value="{{ address.id }}" {% if forloop.first %}checked{% endif %}> {{ address.full_name }}, {{ address.city }} {{ address.pin_code }}</label>
+        <label class="line-item checkout-address">
+          <input type="radio" name="address_id" value="{{ address.id }}" {% if selected_address_id|stringformat:"s" == address.id|stringformat:"s" or not selected_address_id and forloop.first %}checked{% endif %}>
+          <span>
+            <strong>{{ address.full_name }}</strong>
+            <small>{{ address.house }}, {{ address.street }}, {{ address.locality }}, {{ address.city }}, {{ address.state }} - {{ address.pin_code }}</small>
+            <small>{{ address.phone }}{% if address.default_shipping %} · Default{% endif %}</small>
+          </span>
+        </label>
       {% empty %}
-        <p>Add a delivery address from your account before placing an order.</p>
+        <p>Add a delivery address before placing an order.</p>
       {% endfor %}
+      <details class="address-details" {% if not addresses %}open{% endif %}>
+        <summary>{% if addresses %}Add another delivery address{% else %}Add delivery address{% endif %}</summary>
+        <form method="post" action="{% url 'address-add' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'checkout' %}">
+          <div class="form-grid compact">
+            {% for field in address_form %}
+              <label class="{% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
+                {% if field.field.widget.input_type == 'checkbox' %}
+                  {{ field }} <span>{{ field.label }}</span>
+                {% else %}
+                  <span>{{ field.label }}</span>
+                  {{ field }}
+                {% endif %}
+              </label>
+            {% endfor %}
+          </div>
+          <button class="btn btn-primary mt-3" type="submit">Save and Use Address</button>
+        </form>
+      </details>
       <h2 class="mt-4">Payment</h2>
       <div class="payment-options">
         <label class="payment-option is-selected">
@@ -29,7 +56,7 @@
         </label>
       </div>
       <p class="payment-note js-payment-note">COD selected. No online payment is collected now.</p>
-      <button class="btn btn-primary mt-3 js-place-order">Place Order</button>
+      <button class="btn btn-primary mt-3 js-place-order" {% if not addresses or not summary.lines %}disabled{% endif %}>Place Order</button>
     </div>
     <aside class="summary">
       <h2>Payable</h2>

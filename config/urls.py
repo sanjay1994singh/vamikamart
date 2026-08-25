@@ -7,7 +7,7 @@ from django.contrib.sitemaps.views import sitemap
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from apps.catalog.sitemaps import CategorySitemap, ProductSitemap
 from apps.catalog.views import HomeView, ProductDetailView, ProductListView
-from apps.accounts.views import AccountPasswordChangeView, RegisterView
+from apps.accounts.views import AccountPasswordChangeView, AddressCreateView, AddressDefaultView, ProfileView, RegisterView
 from apps.analytics.views import action_queues, order_filters, owner_dashboard, owner_search, reports
 from apps.carts.views import CartPageView
 from apps.checkout.views import CheckoutPageView
@@ -46,6 +46,9 @@ urlpatterns = [
     path("owner/order-filters/", order_filters, name="owner-order-filters"),
     path("accounts/login/", auth_views.LoginView.as_view(template_name="accounts/login.html"), name="login"),
     path("accounts/register/", RegisterView.as_view(), name="register"),
+    path("accounts/profile/", ProfileView.as_view(), name="profile"),
+    path("accounts/addresses/add/", AddressCreateView.as_view(), name="address-add"),
+    path("accounts/addresses/<int:pk>/default/", AddressDefaultView.as_view(), name="address-default"),
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("accounts/change-password/", AccountPasswordChangeView.as_view(), name="change_password"),
     path("accounts/password-reset/", auth_views.PasswordResetView.as_view(template_name="accounts/password_reset.html"), name="password_reset"),

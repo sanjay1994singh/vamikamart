@@ -159,8 +159,13 @@ class AuthViewSet(viewsets.GenericViewSet):
             "refresh": str(refresh),
         })
 
-    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=["get", "patch", "put"], permission_classes=[permissions.IsAuthenticated])
     def profile(self, request):
+        if request.method in {"PATCH", "PUT"}:
+            serializer = UserSerializer(request.user, data=request.data, partial=request.method == "PATCH")
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return ok("Profile updated", serializer.data)
         return ok("Profile loaded", UserSerializer(request.user).data)
 
     @action(detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated])

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<section class="container py-5 account-page">
+  <div class="account-head">
+    <div>
+      <p class="eyebrow">Account</p>
+      <h1>My Profile</h1>
+      <p>Manage your personal details and delivery addresses.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'orders' %}">View Orders</a>
+  </div>
+
+  {% if messages %}
+    <div class="message-stack">
+      {% for message in messages %}
+        <p class="store-message {{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="account-grid">
+    <section class="account-panel">
+      <h2>Profile Details</h2>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-grid">
+          {% for field in profile_form %}
+            <label>
+              <span>{{ field.label }}</span>
+              {{ field }}
+              {% for error in field.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+            </label>
+          {% endfor %}
+        </div>
+        <button class="btn btn-primary mt-3" type="submit">Update Profile</button>
+      </form>
+    </section>
+
+    <section class="account-panel">
+      <h2>Saved Delivery Addresses</h2>
+      {% for address in addresses %}
+        <article class="address-card">
+          <div>
+            <strong>{{ address.full_name }}</strong>
+            <p>{{ address.house }}, {{ address.street }}, {{ address.locality }}, {{ address.city }}, {{ address.state }} - {{ address.pin_code }}</p>
+            <small>{{ address.phone }}{% if address.default_shipping %} · Default shipping{% endif %}</small>
+          </div>
+          {% if not address.default_shipping %}
+            <form method="post" action="{% url 'address-default' address.id %}">
+              {% csrf_token %}
+              <button class="btn btn-light" type="submit">Use Default</button>
+            </form>
+          {% endif %}
+        </article>
+      {% empty %}
+        <p>No delivery address saved yet.</p>
+      {% endfor %}
+    </section>
+  </div>
+
+  <section class="account-panel mt-4">
+    <h2>Add Delivery Address</h2>
+    <form method="post" action="{% url 'address-add' %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'profile' %}">
+      <div class="form-grid">
+        {% for field in address_form %}
+          <label class="{% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
+            {% if field.field.widget.input_type == 'checkbox' %}
+              {{ field }} <span>{{ field.label }}</span>
+            {% else %}
+              <span>{{ field.label }}</span>
+              {{ field }}
+            {% endif %}
+            {% for error in field.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+          </label>
+        {% endfor %}
+      </div>
+      <button class="btn btn-primary mt-3" type="submit">Save Address</button>
+    </form>
+  </section>
+</section>
+{% endblock %}
