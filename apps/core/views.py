@@ -2,6 +2,7 @@ import urllib.parse
 
 from django.contrib.auth.decorators import login_required
 from django.middleware.csrf import get_token
+from django.utils.html import escapejs
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -70,6 +71,13 @@ def mobile_google_login_done(request):
     )
     separator = "&" if "?" in redirect_uri else "?"
     deep_link = f"{redirect_uri}{separator}{query}"
+    parsed_deep_link = urllib.parse.urlparse(deep_link)
+    intent_path = f"{parsed_deep_link.netloc}{parsed_deep_link.path}"
+    if parsed_deep_link.query:
+        intent_path = f"{intent_path}?{parsed_deep_link.query}"
+    intent_link = f"intent://{intent_path}#Intent;scheme={parsed_deep_link.scheme};package=com.vamikamart.app;end"
+    js_deep_link = escapejs(deep_link)
+    js_intent_link = escapejs(intent_link)
     html = f"""<!doctype html>
 <html>
   <head>
@@ -86,11 +94,27 @@ def mobile_google_login_done(request):
     <div class="panel">
       <h1>Opening VamikaMart</h1>
       <p>Google login complete ho gaya. App automatically open ho rahi hai.</p>
-      <a href="{deep_link}">Open VamikaMart app</a>
+      <a id="open-app" href="{deep_link}">Open VamikaMart app</a>
     </div>
     <script>
-      setTimeout(function () {{ window.location.replace("{deep_link}"); }}, 250);
-      setTimeout(function () {{ window.close(); }}, 1800);
+      (function () {{
+        var appUrl = "{js_deep_link}";
+        var intentUrl = "{js_intent_link}";
+        var opened = false;
+        function openApp() {{
+          if (opened) return;
+          opened = true;
+          window.location.href = appUrl;
+          setTimeout(function () {{ window.location.href = intentUrl; }}, 700);
+          setTimeout(function () {{ window.close(); }}, 1800);
+        }}
+        document.getElementById("open-app").addEventListener("click", function (event) {{
+          event.preventDefault();
+          opened = false;
+          openApp();
+        }});
+        openApp();
+      }})();
     </script>
   </body>
 </html>"""
