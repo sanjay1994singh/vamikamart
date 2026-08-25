@@ -69,4 +69,31 @@ def mobile_google_login_done(request):
         }
     )
     separator = "&" if "?" in redirect_uri else "?"
-    return redirect(f"{redirect_uri}{separator}{query}")
+    deep_link = f"{redirect_uri}{separator}{query}"
+    html = f"""<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Opening VamikaMart</title>
+    <style>
+      body {{ font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 32px; color: #1d2521; background: #fbfaf5; }}
+      .panel {{ max-width: 420px; margin: 18vh auto 0; background: #fff; border: 1px solid #e7e1d2; border-radius: 14px; padding: 24px; text-align: center; }}
+      a {{ display: inline-block; margin-top: 14px; padding: 12px 18px; border-radius: 10px; background: #1f6f5b; color: #fff; text-decoration: none; font-weight: 800; }}
+      p {{ color: #66716b; }}
+    </style>
+  </head>
+  <body>
+    <div class="panel">
+      <h1>Opening VamikaMart</h1>
+      <p>Google login complete ho gaya. App automatically open ho rahi hai.</p>
+      <a href="{deep_link}">Open VamikaMart app</a>
+    </div>
+    <script>
+      setTimeout(function () {{ window.location.replace("{deep_link}"); }}, 250);
+      setTimeout(function () {{ window.close(); }}, 1800);
+    </script>
+  </body>
+</html>"""
+    response = HttpResponse(html)
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    return response
