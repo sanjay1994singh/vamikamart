@@ -187,6 +187,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1800);
   }
 
+  $$(".js-use-location").forEach(function (button) {
+    button.addEventListener("click", function () {
+      if (!navigator.geolocation) {
+        showToast("Location is not supported on this device.");
+        return;
+      }
+      var form = button.closest("form");
+      if (!form) return;
+      button.disabled = true;
+      button.textContent = "Detecting...";
+      navigator.geolocation.getCurrentPosition(function (position) {
+        var latitude = form.querySelector("input[name='latitude']");
+        var longitude = form.querySelector("input[name='longitude']");
+        if (latitude) latitude.value = position.coords.latitude.toFixed(6);
+        if (longitude) longitude.value = position.coords.longitude.toFixed(6);
+        button.disabled = false;
+        button.textContent = "Use current location";
+        showToast("Location added. Please complete house and locality.");
+      }, function () {
+        button.disabled = false;
+        button.textContent = "Use current location";
+        showToast("Location permission denied. Please type address manually.");
+      }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+    });
+  });
+
   function selectedPaymentMethod() {
     var checked = document.querySelector("input[name='payment_method']:checked");
     return checked ? checked.value : "cod";

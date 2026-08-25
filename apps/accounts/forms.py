@@ -43,7 +43,13 @@ class AddressForm(forms.ModelForm):
             "state",
             "country",
             "pin_code",
+            "latitude",
+            "longitude",
             "address_type",
             "default_shipping",
             "default_billing",
         )
+        widgets = {
+            "latitude": forms.HiddenInput(),
+            "longitude": forms.HiddenInput(),
+        }

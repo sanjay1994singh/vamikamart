@@ -64,17 +64,28 @@
     <form method="post" action="{% url 'address-add' %}">
       {% csrf_token %}
       <input type="hidden" name="next" value="{% url 'profile' %}">
+      <div class="location-helper">
+        <div>
+          <strong>Delivery location</strong>
+          <span>Use your current location or type the address manually.</span>
+        </div>
+        <button class="btn btn-light js-use-location" type="button">Use current location</button>
+      </div>
       <div class="form-grid">
         {% for field in address_form %}
-          <label class="{% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
-            {% if field.field.widget.input_type == 'checkbox' %}
+          {% if field.is_hidden %}
+            {{ field }}
+          {% else %}
+            <label class="{% if field.field.widget.input_type == 'checkbox' %}checkbox-field{% endif %}">
+              {% if field.field.widget.input_type == 'checkbox' %}
               {{ field }} <span>{{ field.label }}</span>
-            {% else %}
-              <span>{{ field.label }}</span>
-              {{ field }}
-            {% endif %}
-            {% for error in field.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
-          </label>
+              {% else %}
+                <span>{{ field.label }}</span>
+                {{ field }}
+              {% endif %}
+              {% for error in field.errors %}<small class="form-error">{{ error }}</small>{% endfor %}
+            </label>
+          {% endif %}
         {% endfor %}
       </div>
       <button class="btn btn-primary mt-3" type="submit">Save Address</button>

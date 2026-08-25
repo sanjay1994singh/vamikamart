@@ -901,6 +901,40 @@ img { max-width:100%; }
   margin-top:5px;
 }
 
+.location-helper {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin:12px 0 16px;
+  padding:14px;
+  border:1px solid #bad0c7;
+  border-radius:8px;
+  background:#f1faf6;
+}
+
+.location-helper div {
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.location-helper strong {
+  color:#1d2521;
+}
+
+.location-helper span {
+  color:var(--muted);
+  line-height:1.35;
+}
+
+@media (max-width:640px) {
+  .location-helper {
+    align-items:stretch;
+    flex-direction:column;
+  }
+}
+
 .message-stack {
   margin-bottom:18px;
 }
