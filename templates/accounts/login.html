@@ -3,7 +3,10 @@
 {% block content %}
 <section class="container py-5 auth-panel">
   <h1>Login</h1>
-  <a class="btn btn-google" href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.GET.next|default:'/' }}">Continue with Google</a>
+  <form class="google-auth-form" method="post" action="{% url 'social:begin' 'google-oauth2' %}?next={{ request.GET.next|default:'/' }}">
+    {% csrf_token %}
+    <button class="btn btn-google" type="submit">Continue with Google</button>
+  </form>
   <div class="auth-divider"><span>or</span></div>
   <form method="post">
     {% csrf_token %}
