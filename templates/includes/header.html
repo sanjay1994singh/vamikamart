@@ -69,8 +69,16 @@
           <small class="js-cart-total" hidden>₹0</small>
         </span>
       </a>
+      <a class="app-download-link" href="{% url 'app-download' %}" aria-label="Download VamikaMart Android app">
+        <span class="app-download-icon" aria-hidden="true">↓</span>
+        <span>App</span>
+      </a>
     </div>
     <div class="mobile-menu-panel" id="mobile-menu" hidden>
+      <a class="mobile-app-download" href="{% url 'app-download' %}">
+        <span>Download Android App</span>
+        <strong>APK</strong>
+      </a>
       <a href="{% url 'product-list' %}">Shop products</a>
       <a href="{% url 'wishlist' %}">Wishlist</a>
       {% if request.user.is_authenticated %}
