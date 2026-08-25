@@ -11,6 +11,7 @@ from apps.reviews.models import Review
 from apps.promotions.models import Coupon
 from apps.support.models import SupportTicket
 from apps.wishlist.models import WishlistItem
+from .models import MobileAppBuild
 
 
 class ApiResponseMixin:
@@ -219,3 +220,34 @@ class RazorpayConfirmSerializer(serializers.Serializer):
     razorpay_order_id = serializers.CharField()
     razorpay_payment_id = serializers.CharField()
     razorpay_signature = serializers.CharField()
+
+
+class MobileAppBuildSerializer(serializers.ModelSerializer):
+    download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MobileAppBuild
+        fields = [
+            "id",
+            "platform",
+            "track",
+            "version_name",
+            "version_code",
+            "download_url",
+            "release_notes",
+            "force_update",
+            "created_at",
+        ]
+
+    def get_download_url(self, obj):
+        request = self.context.get("request")
+        if not obj.build_file:
+            return ""
+        url = obj.build_file.url
+        return request.build_absolute_uri(url) if request else url
+
+
+class MobileAppUpdateCheckSerializer(serializers.Serializer):
+    platform = serializers.ChoiceField(choices=MobileAppBuild.Platform.choices, default=MobileAppBuild.Platform.ANDROID)
+    track = serializers.ChoiceField(choices=MobileAppBuild.Track.choices, default=MobileAppBuild.Track.TESTING)
+    version_code = serializers.IntegerField(min_value=1, default=1)

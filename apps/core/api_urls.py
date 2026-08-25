@@ -1,11 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenBlacklistView
-from .api_views import AddressViewSet, AuthViewSet, BrandViewSet, CartViewSet, CategoryViewSet, NotificationViewSet, OrderViewSet, PaymentViewSet, ProductViewSet, RefundViewSet, ReturnRequestViewSet, ReviewViewSet, SupportTicketViewSet, WishlistViewSet
+from .api_views import AddressViewSet, AuthViewSet, BrandViewSet, CartViewSet, CategoryViewSet, MobileAppBuildViewSet, NotificationViewSet, OrderViewSet, PaymentViewSet, ProductViewSet, RefundViewSet, ReturnRequestViewSet, ReviewViewSet, SupportTicketViewSet, WishlistViewSet
 
 router = DefaultRouter()
 router.register("auth", AuthViewSet, basename="auth")
 router.register("categories", CategoryViewSet, basename="category")
+router.register("mobile-builds", MobileAppBuildViewSet, basename="mobile-build")
 router.register("brands", BrandViewSet, basename="brand")
 router.register("products", ProductViewSet, basename="product")
 router.register("addresses", AddressViewSet, basename="address")

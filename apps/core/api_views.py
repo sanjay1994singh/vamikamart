@@ -31,6 +31,7 @@ from apps.returns.models import ReturnRequest
 from apps.reviews.models import Review
 from apps.support.models import SupportTicket
 from apps.wishlist.models import WishlistItem
+from .models import MobileAppBuild
 from .serializers import (
     AddressSerializer,
     BrandSerializer,
@@ -40,6 +41,8 @@ from .serializers import (
     CheckoutQuoteSerializer,
     CouponApplySerializer,
     GoogleTokenSerializer,
+    MobileAppBuildSerializer,
+    MobileAppUpdateCheckSerializer,
     OrderSerializer,
     PlaceOrderSerializer,
     PaymentSerializer,
@@ -206,6 +209,34 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.filter(active=True)
     serializer_class = CategorySerializer
     lookup_field = "slug"
+
+
+class MobileAppBuildViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = [permissions.AllowAny]
+    serializer_class = MobileAppBuildSerializer
+
+    def get_queryset(self):
+        return MobileAppBuild.objects.filter(active=True)
+
+    @action(detail=False, methods=["get"])
+    def check_update(self, request):
+        serializer = MobileAppUpdateCheckSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        current_version = serializer.validated_data["version_code"]
+        latest_build = self.get_queryset().filter(
+            platform=serializer.validated_data["platform"],
+            track=serializer.validated_data["track"],
+        ).order_by("-version_code", "-created_at").first()
+        if not latest_build:
+            return ok("No mobile build available", {"update_available": False, "latest": None})
+        latest_data = MobileAppBuildSerializer(latest_build, context={"request": request}).data
+        update_available = latest_build.version_code > current_version
+        return ok("Mobile build checked", {
+            "update_available": update_available,
+            "force_update": latest_build.force_update and update_available,
+            "current_version_code": current_version,
+            "latest": latest_data,
+        })
 
 
 class BrandViewSet(viewsets.ReadOnlyModelViewSet):
