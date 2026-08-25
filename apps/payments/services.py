@@ -47,6 +47,27 @@ class PaymentService:
 
     @staticmethod
     @transaction.atomic
+    def confirm_razorpay_payment(payment, provider_order_id, provider_payment_id, signature):
+        if payment.method != Payment.Method.RAZORPAY:
+            raise ValidationError("Payment is not a Razorpay payment.")
+        if not payment.provider_order_id or payment.provider_order_id != provider_order_id:
+            raise ValidationError("Razorpay order does not match this payment.")
+
+        secret = getattr(settings, "RAZORPAY_KEY_SECRET", "")
+        if not secret:
+            raise ValidationError("Razorpay secret is not configured.")
+        signed_payload = f"{provider_order_id}|{provider_payment_id}".encode("utf-8")
+        expected = hmac.new(secret.encode("utf-8"), signed_payload, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected, signature or ""):
+            raise ValidationError("Invalid Razorpay payment signature.")
+
+        payment.provider_payment_id = provider_payment_id
+        payment.status = Payment.Status.PAID
+        payment.save(update_fields=["provider_payment_id", "status"])
+        return payment
+
+    @staticmethod
+    @transaction.atomic
     def process_webhook(provider, event_id, event_type, payload, payment=None):
         event, created = WebhookEventLog.objects.get_or_create(
             provider=provider,
@@ -106,6 +127,14 @@ class PaymentReconciliationService:
 
 
 class CODSettlementService:
+    @staticmethod
+    def mark_pending(order):
+        settlement, _ = CODSettlement.objects.get_or_create(
+            order=order,
+            defaults={"status": "pending"},
+        )
+        return settlement
+
     @staticmethod
     def mark_collected(order, amount):
         settlement, _ = CODSettlement.objects.update_or_create(

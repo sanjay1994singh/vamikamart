@@ -50,6 +50,7 @@ urlpatterns = [
     path("accounts/change-password/", AccountPasswordChangeView.as_view(), name="change_password"),
     path("accounts/password-reset/", auth_views.PasswordResetView.as_view(template_name="accounts/password_reset.html"), name="password_reset"),
     path("accounts/password-reset/done/", auth_views.PasswordResetDoneView.as_view(template_name="accounts/password_reset_done.html"), name="password_reset_done"),
+    path("auth/", include("social_django.urls", namespace="social")),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
     path("robots.txt", robots_txt, name="robots_txt"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),

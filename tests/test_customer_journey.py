@@ -4,7 +4,7 @@ from apps.accounts.models import Address, User
 from apps.catalog.models import Category, Product
 from apps.inventory.models import Warehouse, WarehouseInventory
 from apps.orders.models import Order
-from apps.payments.models import Payment
+from apps.payments.models import CODSettlement, Payment
 
 
 @pytest.mark.django_db
@@ -51,6 +51,7 @@ def test_customer_cart_checkout_order_journey(api_client):
     assert order_response.status_code == 200
     assert Order.objects.filter(user=user).count() == 1
     assert Payment.objects.filter(order__user=user, method=Payment.Method.COD).count() == 1
+    assert CODSettlement.objects.filter(order__user=user, status="pending").count() == 1
 
     repeat_response = api_client.post(
         "/api/v1/cart/place_order/",

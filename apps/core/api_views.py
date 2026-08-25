@@ -1,3 +1,7 @@
+import json
+import urllib.parse
+import urllib.request
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -5,7 +9,8 @@ from decimal import Decimal
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from apps.accounts.models import Address
+from rest_framework_simplejwt.tokens import RefreshToken
+from apps.accounts.models import Address, User
 from apps.accounts.services import VerificationService
 from apps.accounts.models import VerificationToken
 from apps.catalog.models import Brand, Category, Product, ProductVariant
@@ -18,7 +23,7 @@ from apps.orders.services import OrderService
 from apps.analytics.audit import AuditService
 from apps.notifications.models import Notification
 from apps.payments.models import Payment
-from apps.payments.services import PaymentRecoveryService, PaymentService
+from apps.payments.services import CODSettlementService, PaymentRecoveryService, PaymentService
 from apps.promotions.models import Coupon
 from apps.inventory.models import WarehouseInventory
 from apps.refunds.models import Refund
@@ -34,11 +39,13 @@ from .serializers import (
     CategorySerializer,
     CheckoutQuoteSerializer,
     CouponApplySerializer,
+    GoogleTokenSerializer,
     OrderSerializer,
     PlaceOrderSerializer,
     PaymentSerializer,
     PinCheckSerializer,
     ProductSerializer,
+    RazorpayConfirmSerializer,
     RefundSerializer,
     RegisterSerializer,
     ReturnRequestSerializer,
@@ -109,6 +116,48 @@ class AuthViewSet(viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
         return ok("Registration successful", UserSerializer(user).data)
+
+    @action(detail=False, methods=["post"])
+    def google_mobile(self, request):
+        serializer = GoogleTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        token = serializer.validated_data["id_token"]
+        try:
+            query = urllib.parse.urlencode({"id_token": token})
+            with urllib.request.urlopen(f"https://oauth2.googleapis.com/tokeninfo?{query}", timeout=10) as response:
+                profile = json.loads(response.read().decode("utf-8"))
+        except Exception:
+            return fail("Google sign-in failed", {"google": ["Could not verify Google token."]}, status.HTTP_400_BAD_REQUEST)
+
+        if profile.get("aud") != settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY:
+            return fail("Google sign-in failed", {"google": ["Google token audience does not match this app."]}, status.HTTP_400_BAD_REQUEST)
+        email = User.objects.normalize_email(profile.get("email", ""))
+        if not email:
+            return fail("Google sign-in failed", {"email": ["Google account did not return an email."]}, status.HTTP_400_BAD_REQUEST)
+
+        user, created = User.objects.get_or_create(
+            email__iexact=email,
+            defaults={
+                "email": email,
+                "username": User.objects.available_username(email),
+                "first_name": profile.get("given_name", ""),
+                "last_name": profile.get("family_name", ""),
+                "email_verified": profile.get("email_verified") in {True, "true", "True", "1"},
+            },
+        )
+        if created:
+            user.set_unusable_password()
+            user.save()
+        elif profile.get("email_verified") in {True, "true", "True", "1"} and not user.email_verified:
+            user.email_verified = True
+            user.save(update_fields=["email_verified"])
+
+        refresh = RefreshToken.for_user(user)
+        return ok("Google login successful", {
+            "user": UserSerializer(user).data,
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        })
 
     @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
     def profile(self, request):
@@ -320,9 +369,12 @@ class CartViewSet(viewsets.ReadOnlyModelViewSet):
         Payment.objects.create(order=order, method=serializer.validated_data["payment_method"], amount=order.grand_total)
         payment = order.payment
         provider_data = {}
-        if payment.method == Payment.Method.RAZORPAY:
+        if payment.method == Payment.Method.COD:
+            CODSettlementService.mark_pending(order)
+        elif payment.method == Payment.Method.RAZORPAY:
             try:
                 provider_data = PaymentService.create_razorpay_order(payment)
+                provider_data["key_id"] = settings.RAZORPAY_KEY_ID
             except ValidationError:
                 provider_data = {"credentials_required": True}
         cart.items.all().delete()
@@ -490,3 +542,19 @@ class PaymentViewSet(viewsets.ReadOnlyModelViewSet):
         payment = self.get_object()
         payment = PaymentRecoveryService.recover(payment)
         return ok("Payment recovery checked", PaymentSerializer(payment).data)
+
+    @action(detail=True, methods=["post"])
+    def confirm_razorpay(self, request, pk=None):
+        serializer = RazorpayConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        payment = self.get_object()
+        try:
+            payment = PaymentService.confirm_razorpay_payment(
+                payment,
+                serializer.validated_data["razorpay_order_id"],
+                serializer.validated_data["razorpay_payment_id"],
+                serializer.validated_data["razorpay_signature"],
+            )
+        except ValidationError as exc:
+            return fail("Payment could not be verified", {"payment": exc.messages})
+        return ok("Payment verified", PaymentSerializer(payment).data)

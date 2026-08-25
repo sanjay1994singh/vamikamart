@@ -20,7 +20,8 @@ document.addEventListener("DOMContentLoaded", function () {
       method: settings.method || "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRFToken": getCookie("csrftoken")
+        "X-CSRFToken": getCookie("csrftoken"),
+        ...(settings.headers || {})
       },
       body: settings.body ? JSON.stringify(settings.body) : undefined,
       credentials: "same-origin"
@@ -95,8 +96,10 @@ document.addEventListener("DOMContentLoaded", function () {
   function updateCartCount(cart) {
     var count = cartQuantity(cart);
     var itemLabel = $(".js-cart-items");
+    var mobileItemLabel = $(".js-mobile-cart-items");
     var totalLabel = $(".js-cart-total");
     var cartButton = $(".cart-button");
+    if (mobileItemLabel) mobileItemLabel.textContent = String(count);
     if (count > 0) {
       if (itemLabel) itemLabel.textContent = count + (count === 1 ? " item" : " items");
       if (totalLabel) {
@@ -113,6 +116,30 @@ document.addEventListener("DOMContentLoaded", function () {
       if (cartButton) cartButton.classList.remove("has-items");
     }
     syncProductControls(cart);
+  }
+
+  var menuToggle = $(".mobile-menu-toggle");
+  var mobileMenu = $(".mobile-menu-panel");
+  if (menuToggle && mobileMenu) {
+    menuToggle.addEventListener("click", function () {
+      var isOpen = menuToggle.getAttribute("aria-expanded") === "true";
+      menuToggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
+      mobileMenu.hidden = isOpen;
+    });
+
+    document.addEventListener("click", function (event) {
+      if (mobileMenu.hidden) return;
+      if (event.target.closest(".mobile-menu-toggle") || event.target.closest(".mobile-menu-panel")) return;
+      menuToggle.setAttribute("aria-expanded", "false");
+      mobileMenu.hidden = true;
+    });
+
+    window.addEventListener("resize", function () {
+      if (window.innerWidth > 900) {
+        menuToggle.setAttribute("aria-expanded", "false");
+        mobileMenu.hidden = true;
+      }
+    });
   }
 
   function refreshCartCount() {
@@ -134,6 +161,81 @@ document.addEventListener("DOMContentLoaded", function () {
       window.setTimeout(function () { toast.remove(); }, 220);
     }, 1800);
   }
+
+  function selectedPaymentMethod() {
+    var checked = document.querySelector("input[name='payment_method']:checked");
+    return checked ? checked.value : "cod";
+  }
+
+  function markPaymentMethod() {
+    var method = selectedPaymentMethod();
+    $$(".payment-option").forEach(function (option) {
+      var input = option.querySelector("input[name='payment_method']");
+      option.classList.toggle("is-selected", input && input.checked);
+    });
+    var note = $(".js-payment-note");
+    if (note) {
+      note.textContent = method === "razorpay"
+        ? "Online payment selected. Razorpay will open after the order is created."
+        : "COD selected. No online payment is collected now.";
+    }
+    var button = $(".js-place-order");
+    if (button && !button.disabled) {
+      button.textContent = method === "razorpay" ? "Pay Online" : "Place Order";
+    }
+  }
+
+  function confirmRazorpayPayment(paymentId, razorpayResponse) {
+    return requestJSON("/api/v1/payments/" + paymentId + "/confirm_razorpay/", {
+      method: "POST",
+      body: {
+        razorpay_order_id: razorpayResponse.razorpay_order_id,
+        razorpay_payment_id: razorpayResponse.razorpay_payment_id,
+        razorpay_signature: razorpayResponse.razorpay_signature
+      }
+    });
+  }
+
+  function openRazorpayCheckout(orderData) {
+    if (!window.Razorpay) {
+      alert("Razorpay checkout could not be loaded. Please try again.");
+      return;
+    }
+    if (!orderData.provider || orderData.provider.credentials_required) {
+      alert("Razorpay is not configured yet. Please choose Cash On Delivery or add Razorpay keys in backend settings.");
+      return;
+    }
+    var payment = orderData.payment || {};
+    var provider = orderData.provider || {};
+    var options = {
+      key: provider.key_id,
+      amount: provider.amount,
+      currency: provider.currency || "INR",
+      name: "VamikaMart",
+      description: "Order " + orderData.order_number,
+      order_id: provider.id,
+      handler: function (razorpayResponse) {
+        confirmRazorpayPayment(payment.id, razorpayResponse).then(function () {
+          window.location.href = "/orders/" + orderData.id + "/";
+        }).catch(function () {
+          alert("Payment was received but verification failed. Please contact support with your payment ID.");
+        });
+      },
+      modal: {
+        ondismiss: function () {
+          showToast("Online payment was cancelled. You can retry from payments.");
+        }
+      },
+      theme: { color: "#1f6f5b" }
+    };
+    new window.Razorpay(options).open();
+  }
+
+  document.addEventListener("change", function (event) {
+    if (event.target.matches("input[name='payment_method']")) {
+      markPaymentMethod();
+    }
+  });
 
   document.addEventListener("click", function (event) {
     var addButton = event.target.closest(".js-add-cart");
@@ -224,20 +326,28 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Please select or add a delivery address.");
         return;
       }
+      var method = selectedPaymentMethod();
       placeOrderButton.disabled = true;
-      placeOrderButton.textContent = "Placing...";
+      placeOrderButton.textContent = method === "razorpay" ? "Opening payment..." : "Placing...";
       requestJSON("/api/v1/cart/place_order/", {
         method: "POST",
+        headers: { "Idempotency-Key": "web-" + Date.now() },
         body: {
           address_id: Number(checkedAddress.value),
-          payment_method: ($(".js-payment-method") || {}).value
+          payment_method: method
         }
       }).then(function (response) {
-        window.location.href = "/orders/" + response.data.id + "/";
+        if (method === "razorpay") {
+          openRazorpayCheckout(response.data);
+          placeOrderButton.disabled = false;
+          markPaymentMethod();
+        } else {
+          window.location.href = "/orders/" + response.data.id + "/";
+        }
       }).catch(function () {
         alert("Could not place order.");
         placeOrderButton.disabled = false;
-        placeOrderButton.textContent = "Place Order";
+        markPaymentMethod();
       });
       return;
     }
@@ -315,4 +425,5 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   refreshCartCount();
+  markPaymentMethod();
 });

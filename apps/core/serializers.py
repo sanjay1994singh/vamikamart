@@ -26,17 +26,21 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
+    username = serializers.CharField(required=False, allow_blank=True)
 
     class Meta:
         model = User
         fields = ["email", "username", "first_name", "last_name", "mobile_number", "password"]
 
+    def validate_email(self, value):
+        email = User.objects.normalize_email(value)
+        if User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError("A user with this email already exists.")
+        return email
+
     def create(self, validated_data):
         password = validated_data.pop("password")
-        user = User(**validated_data)
-        user.set_password(password)
-        user.save()
-        return user
+        return User.objects.create_user(password=password, **validated_data)
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -124,6 +128,10 @@ class TokenConsumeSerializer(serializers.Serializer):
     token = serializers.CharField()
 
 
+class GoogleTokenSerializer(serializers.Serializer):
+    id_token = serializers.CharField()
+
+
 class PinCheckSerializer(serializers.Serializer):
     pin_code = serializers.CharField(max_length=12)
 
@@ -189,3 +197,9 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ["id", "order", "method", "status", "provider_order_id", "provider_payment_id", "amount", "created_at"]
         read_only_fields = ["status", "provider_order_id", "provider_payment_id", "amount"]
+
+
+class RazorpayConfirmSerializer(serializers.Serializer):
+    razorpay_order_id = serializers.CharField()
+    razorpay_payment_id = serializers.CharField()
+    razorpay_signature = serializers.CharField()

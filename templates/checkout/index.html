@@ -12,10 +12,23 @@
         <p>Add a delivery address from your account before placing an order.</p>
       {% endfor %}
       <h2 class="mt-4">Payment</h2>
-      <select class="form-select js-payment-method" style="max-width: 260px;">
-        <option value="cod">Cash On Delivery</option>
-        <option value="razorpay">Razorpay</option>
-      </select>
+      <div class="payment-options">
+        <label class="payment-option is-selected">
+          <input type="radio" name="payment_method" value="cod" checked>
+          <span>
+            <strong>Cash On Delivery</strong>
+            <small>Pay at your doorstep after the order is delivered.</small>
+          </span>
+        </label>
+        <label class="payment-option">
+          <input type="radio" name="payment_method" value="razorpay">
+          <span>
+            <strong>Online Payment</strong>
+            <small>Pay securely by card, UPI, wallet or netbanking with Razorpay.</small>
+          </span>
+        </label>
+      </div>
+      <p class="payment-note js-payment-note">COD selected. No online payment is collected now.</p>
       <button class="btn btn-primary mt-3 js-place-order">Place Order</button>
     </div>
     <aside class="summary">
@@ -24,4 +37,7 @@
     </aside>
   </div>
 </section>
+{% endblock %}
+{% block extra_scripts %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 {% endblock %}
