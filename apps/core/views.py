@@ -1,5 +1,10 @@
+import urllib.parse
+
+from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import redirect
+from django.urls import reverse
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import MobileAppBuild
 
@@ -26,3 +31,29 @@ def latest_android_app_download(request):
             content_type="text/plain",
         )
     return redirect(latest_build.build_file.url)
+
+
+def mobile_google_login_start(request):
+    redirect_uri = request.GET.get("redirect_uri") or "vamikamart://auth/google"
+    if not redirect_uri.startswith("vamikamart://"):
+        return HttpResponse("Invalid mobile redirect URI.", status=400, content_type="text/plain")
+
+    request.session["mobile_google_redirect_uri"] = redirect_uri
+    next_url = reverse("mobile-google-login-done")
+    social_url = reverse("social:begin", args=("google-oauth2",))
+    return redirect(f"{social_url}?next={urllib.parse.quote(next_url)}")
+
+
+@login_required
+def mobile_google_login_done(request):
+    redirect_uri = request.session.pop("mobile_google_redirect_uri", "vamikamart://auth/google")
+    refresh = RefreshToken.for_user(request.user)
+    query = urllib.parse.urlencode(
+        {
+            "status": "success",
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+        }
+    )
+    separator = "&" if "?" in redirect_uri else "?"
+    return redirect(f"{redirect_uri}{separator}{query}")
