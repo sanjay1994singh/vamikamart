@@ -65,13 +65,6 @@
             <small>Pay at your doorstep after the order is delivered.</small>
           </span>
         </label>
-        <label class="payment-option">
-          <input type="radio" name="payment_method" value="razorpay">
-          <span>
-            <strong>Online Payment</strong>
-            <small>Pay securely by card, UPI, wallet or netbanking with Razorpay.</small>
-          </span>
-        </label>
       </div>
       <p class="payment-note js-payment-note">COD selected. No online payment is collected now.</p>
       <button class="btn btn-primary mt-3 js-place-order" {% if not addresses or not summary.lines %}disabled{% endif %}>Place Order</button>
@@ -90,6 +83,4 @@
   </div>
 </section>
 {% endblock %}
-{% block extra_scripts %}
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-{% endblock %}
+{% block extra_scripts %}{% endblock %}

@@ -11,7 +11,7 @@ from apps.accounts.views import AccountPasswordChangeView, AddressCreateView, Ad
 from apps.analytics.views import action_queues, order_filters, owner_dashboard, owner_search, reports
 from apps.carts.views import CartPageView
 from apps.checkout.views import CheckoutPageView
-from apps.core.views import latest_android_app_download, mobile_google_login_done, mobile_google_login_start, robots_txt
+from apps.core.views import latest_android_app_download, mobile_google_login_done, mobile_google_login_start, mobile_product_open, robots_txt
 from apps.orders.views import OrderDetailPageView, OrderListPageView, invoice_view
 from apps.notifications.views import NotificationCenterView
 from apps.returns.views import ReturnRequestListView
@@ -57,6 +57,7 @@ urlpatterns = [
     path("auth/", include("social_django.urls", namespace="social")),
     path("mobile/auth/google/start/", mobile_google_login_start, name="mobile-google-login-start"),
     path("mobile/auth/google/done/", mobile_google_login_done, name="mobile-google-login-done"),
+    path("app/open/product/<slug:slug>/", mobile_product_open, name="mobile-product-open"),
     path("app/download/", latest_android_app_download, name="app-download"),
     path("sitemap.xml", sitemap, {"sitemaps": sitemaps}, name="django.contrib.sitemaps.views.sitemap"),
     path("robots.txt", robots_txt, name="robots_txt"),

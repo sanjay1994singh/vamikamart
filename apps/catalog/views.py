@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django.shortcuts import redirect
 from django.views.generic import DetailView, ListView, TemplateView
 from .models import Category, Product, RecentlyViewedProduct
 
@@ -48,6 +49,11 @@ def dummy_products_with_ids():
 
 class HomeView(TemplateView):
     template_name = "home/index.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.session.get("mobile_google_login_pending"):
+            return redirect("mobile-google-login-done")
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

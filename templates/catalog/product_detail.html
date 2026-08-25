@@ -18,11 +18,13 @@
     <input id="qty" class="form-control js-quantity mb-3" type="number" min="1" value="1" style="max-width: 120px;">
     <button class="btn btn-primary js-add-cart" data-product="{{ object.id }}">Add To Cart</button>
     <button class="btn btn-outline-secondary js-add-wishlist" data-product="{{ object.id }}">Wishlist</button>
+    {% url 'mobile-product-open' object.slug as app_open_url %}
     <div class="share-row mt-3">
-      <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank" rel="noopener">WhatsApp</a>
-      <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" rel="noopener">Facebook</a>
-      <a href="https://t.me/share/url?url={{ request.build_absolute_uri }}" target="_blank" rel="noopener">Telegram</a>
-      <button class="btn btn-sm btn-outline-secondary js-copy-link" data-url="{{ request.build_absolute_uri }}">Copy Link</button>
+      <a href="{{ app_open_url }}">Open in app</a>
+      <a href="https://wa.me/?text={{ request.scheme }}://{{ request.get_host }}{{ app_open_url }}" target="_blank" rel="noopener">WhatsApp</a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.scheme }}://{{ request.get_host }}{{ app_open_url }}" target="_blank" rel="noopener">Facebook</a>
+      <a href="https://t.me/share/url?url={{ request.scheme }}://{{ request.get_host }}{{ app_open_url }}" target="_blank" rel="noopener">Telegram</a>
+      <button class="btn btn-sm btn-outline-secondary js-copy-link" data-url="{{ request.scheme }}://{{ request.get_host }}{{ app_open_url }}">Copy Link</button>
     </div>
     <hr>
     <h2>Specifications</h2>

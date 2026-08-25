@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+  var onlinePaymentsEnabled = false;
+
   function $(selector, root) {
     return (root || document).querySelector(selector);
   }
@@ -214,6 +216,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function selectedPaymentMethod() {
+    if (!onlinePaymentsEnabled) return "cod";
     var checked = document.querySelector("input[name='payment_method']:checked");
     return checked ? checked.value : "cod";
   }
@@ -377,7 +380,7 @@ document.addEventListener("DOMContentLoaded", function () {
         alert("Please select or add a delivery address.");
         return;
       }
-      var method = selectedPaymentMethod();
+      var method = onlinePaymentsEnabled ? selectedPaymentMethod() : "cod";
       placeOrderButton.disabled = true;
       placeOrderButton.textContent = method === "razorpay" ? "Opening payment..." : "Placing...";
       requestJSON("/api/v1/cart/place_order/", {
