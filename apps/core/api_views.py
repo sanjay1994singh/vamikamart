@@ -375,8 +375,10 @@ class CartViewSet(viewsets.ReadOnlyModelViewSet):
             try:
                 provider_data = PaymentService.create_razorpay_order(payment)
                 provider_data["key_id"] = settings.RAZORPAY_KEY_ID
-            except ValidationError:
-                provider_data = {"credentials_required": True}
+            except ValidationError as exc:
+                provider_data = {"credentials_required": True, "error": exc.messages}
+            except Exception:
+                provider_data = {"credentials_required": True, "error": ["Razorpay order could not be created."]}
         cart.items.all().delete()
         data = OrderSerializer(order, context={"request": request}).data
         data["payment"] = PaymentSerializer(payment).data
