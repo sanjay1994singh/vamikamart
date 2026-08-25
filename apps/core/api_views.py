@@ -226,7 +226,8 @@ class MobileAppBuildViewSet(viewsets.ReadOnlyModelViewSet):
         latest_build = MobileAppBuild.objects.filter(
             platform=serializer.validated_data["platform"],
             track=serializer.validated_data["track"],
-        ).order_by("-version_code", "-created_at", "-id").first()
+            active=True,
+        ).exclude(build_file="").order_by("-version_code", "-created_at", "-id").first()
         if not latest_build:
             return ok("No mobile build available", {"update_available": False, "latest": None})
         latest_data = MobileAppBuildSerializer(latest_build, context={"request": request}).data
@@ -494,6 +495,9 @@ class SupportTicketViewSet(viewsets.ModelViewSet):
         if getattr(self, "swagger_fake_view", False):
             return SupportTicket.objects.none()
         return SupportTicket.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

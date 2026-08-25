@@ -45,6 +45,10 @@ class MobileAppBuild(models.Model):
         )
         if not latest:
             return
+        older_builds = list(type(self).objects.filter(platform=self.platform, track=self.track).exclude(pk=latest.pk).exclude(build_file=""))
+        type(self).objects.filter(pk__in=[build.pk for build in older_builds]).update(active=False, build_file="")
+        for build in older_builds:
+            build.build_file.storage.delete(build.build_file.name)
         type(self).objects.filter(platform=self.platform, track=self.track).exclude(pk=latest.pk).update(active=False)
         if not latest.active:
             type(self).objects.filter(pk=latest.pk).update(active=True)

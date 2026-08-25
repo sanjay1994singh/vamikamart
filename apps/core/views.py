@@ -19,7 +19,8 @@ def robots_txt(request):
 
 def latest_android_app_download(request):
     latest_build = (
-        MobileAppBuild.objects.filter(platform=MobileAppBuild.Platform.ANDROID, track=MobileAppBuild.Track.TESTING)
+        MobileAppBuild.objects.filter(platform=MobileAppBuild.Platform.ANDROID, track=MobileAppBuild.Track.TESTING, active=True)
+        .exclude(build_file="")
         .order_by("-version_code", "-created_at", "-id")
         .first()
     )
