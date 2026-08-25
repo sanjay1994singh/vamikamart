@@ -35,3 +35,16 @@ class MobileAppBuild(models.Model):
 
     def __str__(self):
         return f"{self.get_platform_display()} {self.get_track_display()} {self.version_name} ({self.version_code})"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        latest = (
+            type(self).objects.filter(platform=self.platform, track=self.track)
+            .order_by("-version_code", "-created_at", "-id")
+            .first()
+        )
+        if not latest:
+            return
+        type(self).objects.filter(platform=self.platform, track=self.track).exclude(pk=latest.pk).update(active=False)
+        if not latest.active:
+            type(self).objects.filter(pk=latest.pk).update(active=True)
