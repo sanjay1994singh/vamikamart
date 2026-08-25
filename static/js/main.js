@@ -404,13 +404,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var cancelButton = event.target.closest(".js-cancel-order");
     if (cancelButton) {
+      var reason = window.prompt("Cancellation reason", "Customer requested cancellation");
+      if (reason === null) return;
+      cancelButton.disabled = true;
+      cancelButton.textContent = "Cancelling...";
       requestJSON("/api/v1/orders/" + cancelButton.dataset.order + "/cancel/", {
         method: "POST",
-        body: { reason: "Customer requested cancellation" }
+        body: { reason: reason || "Customer requested cancellation" }
       }).then(function () {
         window.location.reload();
       }).catch(function () {
-        alert("Could not request cancellation.");
+        alert("Could not cancel order.");
+        cancelButton.disabled = false;
+        cancelButton.textContent = "Cancel Order";
       });
       return;
     }

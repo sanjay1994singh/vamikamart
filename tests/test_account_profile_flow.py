@@ -1,6 +1,27 @@
+import json
+
 import pytest
 
 from apps.accounts.models import Address, User
+from apps.carts.models import Cart, CartItem
+from apps.catalog.models import Category, Product
+from apps.inventory.models import Warehouse, WarehouseInventory
+
+
+def create_cart_product(slug="guest-cart-product"):
+    category = Category.objects.create(name=f"Category {slug}", slug=f"category-{slug}")
+    product = Product.objects.create(
+        name="Guest Cart Product",
+        slug=slug,
+        sku=f"SKU-{slug}",
+        category=category,
+        mrp="60.00",
+        selling_price="42.00",
+        status=Product.Status.ACTIVE,
+    )
+    warehouse = Warehouse.objects.create(name=f"Warehouse {slug}", code=f"WH-{slug}"[:32])
+    WarehouseInventory.objects.create(product=product, warehouse=warehouse, physical_stock=20)
+    return product
 
 
 @pytest.mark.django_db
@@ -19,6 +40,47 @@ def test_registration_logs_customer_in_with_multiple_auth_backends(client):
     assert response.status_code == 302
     user = User.objects.get(email="newweb@example.com")
     assert str(client.session["_auth_user_id"]) == str(user.pk)
+
+
+@pytest.mark.django_db
+def test_guest_cart_merges_after_registration(client):
+    product = create_cart_product("register-cart-product")
+
+    add_response = client.post("/api/v1/cart/add/", json.dumps({"product_id": product.id, "quantity": 2}), content_type="application/json")
+    assert add_response.status_code == 200
+
+    response = client.post(
+        "/accounts/register/",
+        {
+            "email": "cart-register@example.com",
+            "first_name": "Cart",
+            "mobile_number": "9999999999",
+            "password1": "S8rong!Pass123",
+            "password2": "S8rong!Pass123",
+        },
+    )
+
+    assert response.status_code == 302
+    user = User.objects.get(email="cart-register@example.com")
+    cart = Cart.objects.get(user=user)
+    item = CartItem.objects.get(cart=cart, product=product)
+    assert item.quantity == 2
+
+
+@pytest.mark.django_db
+def test_guest_cart_merges_after_normal_login(client):
+    product = create_cart_product("login-cart-product")
+    user = User.objects.create_user(email="cart-login@example.com", password="pass12345")
+
+    add_response = client.post("/api/v1/cart/add/", json.dumps({"product_id": product.id, "quantity": 3}), content_type="application/json")
+    assert add_response.status_code == 200
+
+    response = client.post("/accounts/login/", {"username": "cart-login@example.com", "password": "pass12345"})
+
+    assert response.status_code == 302
+    cart = Cart.objects.get(user=user)
+    item = CartItem.objects.get(cart=cart, product=product)
+    assert item.quantity == 3
 
 
 @pytest.mark.django_db

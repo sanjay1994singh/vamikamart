@@ -1,22 +1,65 @@
 {% extends "base.html" %}
 {% block title %}Order {{ object.order_number }}{% endblock %}
 {% block content %}
-<section class="container py-5">
-  <h1>{{ object.order_number }}</h1>
-  <p>Status: {{ object.status }}</p>
+<section class="container py-5 order-detail-page">
+  <div class="checkout-head">
+    <p class="eyebrow">Order Detail</p>
+    <h1>{{ object.order_number }}</h1>
+    <p>Status: <strong class="order-status order-status-{{ object.status }}">{{ object.get_status_display }}</strong></p>
+  </div>
   {% if object.shipment %}
     <p>Tracking: <a href="{{ object.shipment.tracking_url }}">{{ object.shipment.awb|default:"Pending" }}</a></p>
   {% endif %}
-  {% for item in object.items.all %}
-    <div class="line-item">
-      <strong>{{ item.product_name }}</strong>
-      <span>{{ item.sku }}</span>
-      <span>Qty {{ item.quantity }}</span>
-      <span>₹{{ item.line_total }}</span>
+  <div class="cart-layout">
+    <div>
+      <section class="checkout-panel">
+        <h2>Items</h2>
+        {% for item in object.items.all %}
+          <div class="line-item">
+            <strong>{{ item.product_name }}</strong>
+            <span>{{ item.sku }}</span>
+            <span>Qty {{ item.quantity }}</span>
+            <span>₹{{ item.line_total }}</span>
+          </div>
+        {% endfor %}
+        {% if object.status == "pending" or object.status == "confirmed" %}
+          <button class="btn btn-outline-danger js-cancel-order" data-order="{{ object.id }}">Cancel Order</button>
+        {% endif %}
+      </section>
+      <section class="checkout-panel mt-4">
+        <h2>Cancellation Record</h2>
+        {% for cancellation in object.cancellations.all %}
+          <article class="order-record">
+            <strong>{{ cancellation.status|title }}</strong>
+            <span>{{ cancellation.reason }}</span>
+            <small>{{ cancellation.created_at|date:"d M Y, h:i A" }} · Refund amount ₹{{ cancellation.refund_amount }}</small>
+          </article>
+        {% empty %}
+          <p class="muted">No cancellation requested for this order.</p>
+        {% endfor %}
+      </section>
+      <section class="checkout-panel mt-4">
+        <h2>Status Timeline</h2>
+        {% for history in object.status_history.all %}
+          <article class="order-record">
+            <strong>{{ history.previous_status|default:"created" }} → {{ history.new_status }}</strong>
+            <span>{{ history.note|default:"Status updated" }}</span>
+            <small>{{ history.created_at|date:"d M Y, h:i A" }}</small>
+          </article>
+        {% empty %}
+          <p class="muted">No status updates yet.</p>
+        {% endfor %}
+      </section>
     </div>
-  {% endfor %}
-  {% if object.status == "pending" or object.status == "confirmed" %}
-    <button class="btn btn-outline-danger js-cancel-order" data-order="{{ object.id }}">Cancel Order</button>
-  {% endif %}
+    <aside class="summary">
+      <p class="eyebrow">Order Total</p>
+      <h2>Payable</h2>
+      <div class="summary-row"><span>Subtotal</span><strong>₹{{ object.subtotal }}</strong></div>
+      <div class="summary-row"><span>Discount</span><strong>₹{{ object.coupon_discount }}</strong></div>
+      <div class="summary-row"><span>Tax</span><strong>₹{{ object.tax }}</strong></div>
+      <div class="summary-row"><span>Shipping</span><strong>₹{{ object.shipping }}</strong></div>
+      <div class="summary-total"><span>Total</span><strong>₹{{ object.grand_total }}</strong></div>
+    </aside>
+  </div>
 </section>
 {% endblock %}

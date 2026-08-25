@@ -51,7 +51,7 @@ class InvoiceService:
 class CancellationService:
     @staticmethod
     @transaction.atomic
-    def approve(cancellation, actor=None):
+    def approve(cancellation, actor=None, note="Cancellation approved"):
         if cancellation.status != "requested":
             return cancellation
         order = cancellation.order
@@ -62,7 +62,7 @@ class CancellationService:
         cancellation.save(update_fields=["status"])
         for item in order.items.select_related("product", "variant"):
             InventoryService.release(item.product, item.variant, item.quantity, "cancellation", str(cancellation.id), actor)
-        OrderStatusHistory.objects.create(order=order, previous_status=previous, new_status=order.status, changed_by=actor, note="Cancellation approved")
+        OrderStatusHistory.objects.create(order=order, previous_status=previous, new_status=order.status, changed_by=actor, note=note)
         AuditService.log("cancellation_approved", "orders.CancellationRequest", cancellation.id, actor=actor, previous={"order_status": previous}, new={"order_status": order.status})
         return cancellation
 

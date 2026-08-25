@@ -18,7 +18,7 @@ class OrderDetailPageView(LoginRequiredMixin, DetailView):
     template_name = "orders/detail.html"
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).prefetch_related("items")
+        return Order.objects.filter(user=self.request.user).prefetch_related("items", "cancellations", "status_history")
 
 
 @staff_member_required

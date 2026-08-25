@@ -13,15 +13,19 @@ class CartService:
         if not request.session.session_key:
             request.session.create()
         cart, _ = Cart.objects.get_or_create(session_key=request.session.session_key, user=None)
+        request.session[CartService.SESSION_KEY] = cart.id
         return cart
 
     @staticmethod
     @transaction.atomic
     def merge_guest_cart(request, user):
         session_key = request.session.session_key
-        if not session_key:
-            return Cart.objects.get_or_create(user=user)[0]
-        guest = Cart.objects.filter(session_key=session_key, user=None).first()
+        guest_cart_id = request.session.get(CartService.SESSION_KEY)
+        guest = None
+        if guest_cart_id:
+            guest = Cart.objects.filter(id=guest_cart_id, user=None).first()
+        if not guest and session_key:
+            guest = Cart.objects.filter(session_key=session_key, user=None).first()
         customer, _ = Cart.objects.get_or_create(user=user)
         if not guest:
             return customer
@@ -36,4 +40,5 @@ class CartService:
                 target.quantity += item.quantity
                 target.save(update_fields=["quantity"])
         guest.delete()
+        request.session.pop(CartService.SESSION_KEY, None)
         return customer

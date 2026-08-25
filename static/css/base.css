@@ -952,6 +952,38 @@ img { max-width:100%; }
   font-size:1.08rem;
 }
 
+.order-status {
+  display:inline-flex;
+  align-items:center;
+  min-height:28px;
+  padding:3px 10px;
+  border-radius:999px;
+  background:#eef6f7;
+  color:var(--brand-dark);
+  font-size:.9rem;
+}
+
+.order-status-cancelled {
+  background:#fff0ee;
+  color:#a3382e;
+}
+
+.order-record {
+  display:grid;
+  gap:4px;
+  padding:12px 0;
+  border-bottom:1px solid #e3ecee;
+}
+
+.order-record:last-child {
+  border-bottom:0;
+}
+
+.order-record span,
+.order-record small {
+  color:var(--muted);
+}
+
 @media (max-width: 620px) {
   .auth-panel,
   .checkout-panel,

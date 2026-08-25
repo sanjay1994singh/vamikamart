@@ -431,13 +431,20 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
     @action(detail=True, methods=["post"])
     def cancel(self, request, pk=None):
         from apps.orders.models import CancellationRequest
+        from apps.orders.services_extra import CancellationService
 
         order = self.get_object()
         if order.status not in {Order.Status.PENDING, Order.Status.CONFIRMED}:
             return fail("Order cannot be cancelled", {"status": ["Current status is not cancellable."]})
-        CancellationRequest.objects.create(order=order, requested_by=request.user, reason=request.data.get("reason", "Customer requested cancellation"), refund_amount=order.grand_total)
-        AuditService.log("cancellation_requested", "orders.Order", order.id, actor=request.user, new={"status": order.status})
-        return ok("Cancellation requested")
+        cancellation = CancellationRequest.objects.create(
+            order=order,
+            requested_by=request.user,
+            reason=request.data.get("reason", "Customer requested cancellation"),
+            refund_amount=order.grand_total,
+        )
+        AuditService.log("cancellation_requested", "orders.Order", order.id, actor=request.user, new={"status": order.status, "reason": cancellation.reason})
+        CancellationService.approve(cancellation, actor=request.user, note="Cancelled by customer")
+        return ok("Order cancelled", OrderSerializer(order, context={"request": request}).data)
 
 
 class SupportTicketViewSet(viewsets.ModelViewSet):
