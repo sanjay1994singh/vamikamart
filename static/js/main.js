@@ -483,4 +483,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
   refreshCartCount();
   markPaymentMethod();
+  $$('input[type="password"]').forEach(function (input) {
+    if (input.dataset.passwordToggleReady === "1") return;
+    input.dataset.passwordToggleReady = "1";
+    var wrapper = document.createElement("span");
+    wrapper.className = "password-field-wrap";
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    var button = document.createElement("button");
+    button.type = "button";
+    button.className = "password-toggle";
+    button.setAttribute("aria-label", "Show password");
+    button.textContent = "👁";
+    button.addEventListener("click", function () {
+      var show = input.type === "password";
+      input.type = show ? "text" : "password";
+      button.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      button.classList.toggle("is-visible", show);
+    });
+    wrapper.appendChild(button);
+  });
 });

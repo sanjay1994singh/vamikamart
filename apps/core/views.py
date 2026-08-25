@@ -1,6 +1,7 @@
 import urllib.parse
 
 from django.contrib.auth.decorators import login_required
+from django.middleware.csrf import get_token
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.urls import reverse
@@ -41,7 +42,19 @@ def mobile_google_login_start(request):
     request.session["mobile_google_redirect_uri"] = redirect_uri
     next_url = reverse("mobile-google-login-done")
     social_url = reverse("social:begin", args=("google-oauth2",))
-    return redirect(f"{social_url}?next={urllib.parse.quote(next_url)}")
+    csrf_token = get_token(request)
+    html = f"""<!doctype html>
+<html>
+  <head><meta name="viewport" content="width=device-width, initial-scale=1"><title>Continue with Google</title></head>
+  <body>
+    <form id="google-login" method="post" action="{social_url}?next={urllib.parse.quote(next_url)}">
+      <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
+      <noscript><button type="submit">Continue with Google</button></noscript>
+    </form>
+    <script>document.getElementById("google-login").submit();</script>
+  </body>
+</html>"""
+    return HttpResponse(html)
 
 
 @login_required

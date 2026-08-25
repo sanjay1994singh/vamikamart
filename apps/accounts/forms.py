@@ -17,6 +17,15 @@ class CustomerRegistrationForm(UserCreationForm):
             raise forms.ValidationError("A user with this email already exists.")
         return email
 
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if not user.username:
+            user.username = User.objects.available_username(user.email)
+        if commit:
+            user.save()
+            self.save_m2m()
+        return user
+
 
 class ProfileUpdateForm(forms.ModelForm):
     class Meta:

@@ -675,6 +675,33 @@ img { max-width:100%; }
   transition:border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
 
+.password-field-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 420px;
+}
+
+.password-field-wrap input {
+  padding-right: 48px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 999px;
+  background: #eef7f3;
+  color: var(--teal);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
 .auth-panel form:not(.google-auth-form) input:focus,
 .auth-panel form:not(.google-auth-form) select:focus,
 .auth-panel form:not(.google-auth-form) textarea:focus,
