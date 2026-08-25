@@ -5,10 +5,22 @@ ALLOWED_HOSTS = env.list(
     "DJANGO_ALLOWED_HOSTS",
     default=["127.0.0.1", "localhost", "vamikamart.testonline.tech"],
 )
-CSRF_TRUSTED_ORIGINS = env.list(
-    "DJANGO_CSRF_TRUSTED_ORIGINS",
-    default=["https://vamikamart.testonline.tech"],
-)
+
+
+def _csrf_origins_from_hosts(hosts):
+    origins = []
+    for host in hosts:
+        normalized = host.strip()
+        if not normalized or normalized in {"*", "127.0.0.1", "localhost"}:
+            continue
+        origins.extend([f"https://{normalized}", f"http://{normalized}"])
+    return origins
+
+
+CSRF_TRUSTED_ORIGINS = sorted(set(
+    env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
+    + _csrf_origins_from_hosts(ALLOWED_HOSTS)
+))
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
