@@ -22,6 +22,26 @@ def test_registration_logs_customer_in_with_multiple_auth_backends(client):
 
 
 @pytest.mark.django_db
+def test_header_shows_account_menu_for_authenticated_customer(client):
+    user = User.objects.create_user(
+        email="menu@example.com",
+        password="pass12345",
+        mobile_number="7777777777",
+    )
+    client.force_login(user)
+
+    response = client.get("/")
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert "Account" in content
+    assert "My Account" in content
+    assert "7777777777" in content
+    assert "Saved Addresses" in content
+    assert 'action="/accounts/logout/"' in content
+
+
+@pytest.mark.django_db
 def test_profile_page_updates_customer_details(client):
     user = User.objects.create_user(email="profile@example.com", password="pass12345")
     client.force_login(user)

@@ -142,6 +142,31 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  var accountMenu = $(".account-menu");
+  var accountToggle = $(".account-menu-toggle", accountMenu);
+  var accountPanel = $(".account-menu-panel", accountMenu);
+  function closeAccountMenu() {
+    if (!accountToggle || !accountPanel) return;
+    accountToggle.setAttribute("aria-expanded", "false");
+    accountPanel.hidden = true;
+  }
+  if (accountToggle && accountPanel) {
+    accountToggle.addEventListener("click", function () {
+      var isOpen = accountToggle.getAttribute("aria-expanded") === "true";
+      accountToggle.setAttribute("aria-expanded", isOpen ? "false" : "true");
+      accountPanel.hidden = isOpen;
+    });
+
+    document.addEventListener("click", function (event) {
+      if (accountPanel.hidden || event.target.closest(".account-menu")) return;
+      closeAccountMenu();
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") closeAccountMenu();
+    });
+  }
+
   function refreshCartCount() {
     requestJSON("/api/v1/cart/current/").then(function (response) {
       updateCartCount(response.data);
