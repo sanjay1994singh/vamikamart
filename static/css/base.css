@@ -616,6 +616,12 @@ img { max-width:100%; }
   cursor:pointer;
 }
 
+.btn.is-disabled,
+.btn[aria-disabled="true"] {
+  opacity:.62;
+  cursor:not-allowed;
+}
+
 .btn-google::before {
   content:"G";
   display:inline-grid;

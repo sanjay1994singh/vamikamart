@@ -33,7 +33,11 @@
       <p>Tax ₹{{ summary.tax }}</p>
       <p>Shipping ₹{{ summary.shipping }}</p>
       <strong>Total ₹{{ summary.final_total }}</strong>
-      <a class="btn btn-primary w-100 mt-3" href="{% url 'checkout' %}">Checkout</a>
+      {% if summary.lines %}
+        <a class="btn btn-primary w-100 mt-3" href="{% url 'checkout' %}">Checkout</a>
+      {% else %}
+        <a class="btn btn-primary w-100 mt-3 is-disabled" href="{% url 'product-list' %}" aria-disabled="true">Add products to checkout</a>
+      {% endif %}
     </aside>
   </div>
 </section>

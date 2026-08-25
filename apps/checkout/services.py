@@ -61,6 +61,16 @@ class CheckoutService:
             subtotal += line_total
             mrp_total += mrp * item.quantity
             lines.append({"item": item, "unit_price": unit, "line_total": line_total})
+        if not lines:
+            return {
+                "lines": [],
+                "mrp_total": Decimal("0.00"),
+                "subtotal": Decimal("0.00"),
+                "coupon_discount": Decimal("0.00"),
+                "tax": Decimal("0.00"),
+                "shipping": Decimal("0.00"),
+                "final_total": Decimal("0.00"),
+            }
         coupon_discount = CouponService.validate_for_customer(cart.coupon, cart.user, subtotal) if cart.coupon else Decimal("0.00")
         tax = TaxService.calculate(subtotal - coupon_discount)
         shipping = ShippingRateService.calculate(subtotal)
