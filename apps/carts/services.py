@@ -18,9 +18,9 @@ class CartService:
 
     @staticmethod
     @transaction.atomic
-    def merge_guest_cart(request, user):
+    def merge_guest_cart(request, user, guest_cart_id=None):
         session_key = request.session.session_key
-        guest_cart_id = request.session.get(CartService.SESSION_KEY)
+        guest_cart_id = guest_cart_id or request.session.get(CartService.SESSION_KEY)
         guest = None
         if guest_cart_id:
             guest = Cart.objects.filter(id=guest_cart_id, user=None).first()

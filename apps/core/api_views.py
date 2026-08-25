@@ -169,6 +169,11 @@ class AuthViewSet(viewsets.GenericViewSet):
         return ok("Profile loaded", UserSerializer(request.user).data)
 
     @action(detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def merge_guest_cart(self, request):
+        cart = CartService.merge_guest_cart(request, request.user, guest_cart_id=request.data.get("guest_cart_id"))
+        return ok("Guest cart merged", CartSerializer(cart, context={"request": request}).data)
+
+    @action(detail=False, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def send_email_verification(self, request):
         token = VerificationService.issue_email_verification(request.user)
         return ok("Email verification token issued", {"token": token.token})

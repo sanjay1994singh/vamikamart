@@ -155,10 +155,15 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
+    invoice_number = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ["id", "order_number", "status", "subtotal", "coupon_discount", "tax", "shipping", "grand_total", "items", "created_at"]
+        fields = ["id", "order_number", "status", "subtotal", "coupon_discount", "tax", "shipping", "grand_total", "invoice_number", "items", "created_at"]
+
+    def get_invoice_number(self, obj):
+        invoice = getattr(obj, "invoice", None)
+        return invoice.invoice_number if invoice else ""
 
 
 class SupportTicketSerializer(serializers.ModelSerializer):

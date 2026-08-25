@@ -84,6 +84,23 @@ def test_guest_cart_merges_after_normal_login(client):
 
 
 @pytest.mark.django_db
+def test_mobile_token_login_can_merge_guest_cart_by_cart_id(api_client):
+    product = create_cart_product("mobile-merge-product")
+    user = User.objects.create_user(email="mobile-merge@example.com", password="pass12345")
+    guest_cart = Cart.objects.create(session_key="mobile-session")
+    CartItem.objects.create(cart=guest_cart, product=product, quantity=4)
+
+    api_client.force_authenticate(user)
+    response = api_client.post("/api/v1/auth/merge_guest_cart/", {"guest_cart_id": guest_cart.id}, format="json")
+
+    assert response.status_code == 200
+    cart = Cart.objects.get(user=user)
+    item = CartItem.objects.get(cart=cart, product=product)
+    assert item.quantity == 4
+    assert not Cart.objects.filter(id=guest_cart.id).exists()
+
+
+@pytest.mark.django_db
 def test_header_shows_account_menu_for_authenticated_customer(client):
     user = User.objects.create_user(
         email="menu@example.com",
