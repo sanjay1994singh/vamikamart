@@ -2,7 +2,7 @@ import urllib.parse
 
 from django.contrib.auth.decorators import login_required
 from django.middleware.csrf import get_token
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -17,12 +17,8 @@ def robots_txt(request):
 
 def latest_android_app_download(request):
     latest_build = (
-        MobileAppBuild.objects.filter(
-            active=True,
-            platform=MobileAppBuild.Platform.ANDROID,
-            track=MobileAppBuild.Track.TESTING,
-        )
-        .order_by("-version_code", "-created_at")
+        MobileAppBuild.objects.filter(platform=MobileAppBuild.Platform.ANDROID, track=MobileAppBuild.Track.TESTING)
+        .order_by("-version_code", "-created_at", "-id")
         .first()
     )
     if not latest_build or not latest_build.build_file:
@@ -31,7 +27,11 @@ def latest_android_app_download(request):
             status=404,
             content_type="text/plain",
         )
-    return redirect(latest_build.build_file.url)
+    separator = "&" if "?" in latest_build.build_file.url else "?"
+    response = HttpResponseRedirect(f"{latest_build.build_file.url}{separator}v={latest_build.version_code}")
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Pragma"] = "no-cache"
+    return response
 
 
 def mobile_google_login_start(request):

@@ -245,7 +245,8 @@ class MobileAppBuildSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if not obj.build_file:
             return ""
-        url = obj.build_file.url
+        separator = "&" if "?" in obj.build_file.url else "?"
+        url = f"{obj.build_file.url}{separator}v={obj.version_code}"
         return request.build_absolute_uri(url) if request else url
 
 

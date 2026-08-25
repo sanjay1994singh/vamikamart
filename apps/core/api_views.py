@@ -223,10 +223,10 @@ class MobileAppBuildViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = MobileAppUpdateCheckSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         current_version = serializer.validated_data["version_code"]
-        latest_build = self.get_queryset().filter(
+        latest_build = MobileAppBuild.objects.filter(
             platform=serializer.validated_data["platform"],
             track=serializer.validated_data["track"],
-        ).order_by("-version_code", "-created_at").first()
+        ).order_by("-version_code", "-created_at", "-id").first()
         if not latest_build:
             return ok("No mobile build available", {"update_available": False, "latest": None})
         latest_data = MobileAppBuildSerializer(latest_build, context={"request": request}).data
