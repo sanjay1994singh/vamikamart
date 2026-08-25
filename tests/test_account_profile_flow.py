@@ -4,6 +4,24 @@ from apps.accounts.models import Address, User
 
 
 @pytest.mark.django_db
+def test_registration_logs_customer_in_with_multiple_auth_backends(client):
+    response = client.post(
+        "/accounts/register/",
+        {
+            "email": "newweb@example.com",
+            "first_name": "New",
+            "mobile_number": "9999999999",
+            "password1": "S8rong!Pass123",
+            "password2": "S8rong!Pass123",
+        },
+    )
+
+    assert response.status_code == 302
+    user = User.objects.get(email="newweb@example.com")
+    assert str(client.session["_auth_user_id"]) == str(user.pk)
+
+
+@pytest.mark.django_db
 def test_profile_page_updates_customer_details(client):
     user = User.objects.create_user(email="profile@example.com", password="pass12345")
     client.force_login(user)
