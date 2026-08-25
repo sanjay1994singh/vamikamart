@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
 {% block content %}
-<section class="container py-5 auth-panel">
-  <h1>Create Account</h1>
+<section class="container py-5 auth-shell">
+  <div class="auth-panel">
+    <p class="eyebrow">New Customer</p>
+    <h1>Create Account</h1>
+    <p class="auth-copy">Save addresses, track orders and checkout faster next time.</p>
   <form class="google-auth-form" method="post" action="{% url 'social:begin' 'google-oauth2' %}?next={{ request.GET.next|default:'/' }}">
     {% csrf_token %}
     <button class="btn btn-google" type="submit">Continue with Google</button>
@@ -14,5 +17,6 @@
     <button class="btn btn-primary" type="submit">Create Account</button>
   </form>
   <p class="auth-switch">Already registered? <a href="{% url 'login' %}">Login</a></p>
+  </div>
 </section>
 {% endblock %}

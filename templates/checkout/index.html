@@ -1,10 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Checkout{% endblock %}
 {% block content %}
-<section class="container py-5">
-  <h1>Checkout</h1>
+<section class="container py-5 checkout-page">
+  <div class="checkout-head">
+    <p class="eyebrow">Secure Checkout</p>
+    <h1>Checkout</h1>
+    <p>Choose delivery address and payment mode before placing your order.</p>
+  </div>
   <div class="cart-layout">
     <div>
+      <section class="checkout-panel">
       <h2>Delivery Address</h2>
       {% for address in addresses %}
         <label class="line-item checkout-address">
@@ -38,7 +43,9 @@
           <button class="btn btn-primary mt-3" type="submit">Save and Use Address</button>
         </form>
       </details>
-      <h2 class="mt-4">Payment</h2>
+      </section>
+      <section class="checkout-panel mt-4">
+      <h2>Payment</h2>
       <div class="payment-options">
         <label class="payment-option is-selected">
           <input type="radio" name="payment_method" value="cod" checked>
@@ -57,10 +64,17 @@
       </div>
       <p class="payment-note js-payment-note">COD selected. No online payment is collected now.</p>
       <button class="btn btn-primary mt-3 js-place-order" {% if not addresses or not summary.lines %}disabled{% endif %}>Place Order</button>
+      </section>
     </div>
     <aside class="summary">
+      <p class="eyebrow">Order Total</p>
       <h2>Payable</h2>
-      <strong>₹{{ summary.final_total }}</strong>
+      <div class="summary-row"><span>Items</span><strong>{{ summary.lines|length }}</strong></div>
+      <div class="summary-row"><span>Subtotal</span><strong>₹{{ summary.subtotal }}</strong></div>
+      <div class="summary-row"><span>Discount</span><strong>₹{{ summary.discount }}</strong></div>
+      <div class="summary-row"><span>Tax</span><strong>₹{{ summary.tax }}</strong></div>
+      <div class="summary-row"><span>Shipping</span><strong>₹{{ summary.shipping }}</strong></div>
+      <div class="summary-total"><span>Total</span><strong>₹{{ summary.final_total }}</strong></div>
     </aside>
   </div>
 </section>
