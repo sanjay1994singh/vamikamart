@@ -52,6 +52,15 @@ def test_customer_cart_checkout_order_journey(api_client):
     assert Order.objects.filter(user=user).count() == 1
     assert Payment.objects.filter(order__user=user, method=Payment.Method.COD).count() == 1
     assert CODSettlement.objects.filter(order__user=user, status="pending").count() == 1
+    order = Order.objects.get(user=user)
+
+    web_client = api_client
+    web_client.force_login(user)
+    orders_page = web_client.get("/orders/")
+    assert orders_page.status_code == 200
+    content = orders_page.content.decode()
+    assert f'href="/orders/{order.id}/"' in content
+    assert f"/api/v1/orders/{order.id}/" not in content
 
     repeat_response = api_client.post(
         "/api/v1/cart/place_order/",

@@ -4,7 +4,7 @@
 <section class="container py-5">
   <h1>My Orders</h1>
   {% for order in object_list %}
-    <a class="line-item" href="{% url 'order-detail' order.id %}">
+    <a class="line-item" href="{% url 'order-web-detail' order.id %}">
       <strong>{{ order.order_number }}</strong>
       <span>{{ order.status }}</span>
       <span>₹{{ order.grand_total }}</span>
