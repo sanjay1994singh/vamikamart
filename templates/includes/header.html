@@ -55,7 +55,10 @@
             </div>
             <a href="{% url 'login' %}">Login</a>
             <a href="{% url 'register' %}">Create Account</a>
-            <a href="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path|urlencode }}">Continue with Google</a>
+            <form method="post" action="{% url 'social:begin' 'google-oauth2' %}?next={{ request.path|urlencode }}">
+              {% csrf_token %}
+              <button type="submit">Continue with Google</button>
+            </form>
           {% endif %}
         </div>
       </div>

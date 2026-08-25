@@ -42,6 +42,16 @@ def test_header_shows_account_menu_for_authenticated_customer(client):
 
 
 @pytest.mark.django_db
+def test_header_google_begin_uses_post_form_for_guest(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    content = response.content.decode()
+    assert 'method="post" action="/auth/login/google-oauth2/?next=/"' in content
+    assert 'href="/auth/login/google-oauth2/' not in content
+
+
+@pytest.mark.django_db
 def test_profile_page_updates_customer_details(client):
     user = User.objects.create_user(email="profile@example.com", password="pass12345")
     client.force_login(user)
