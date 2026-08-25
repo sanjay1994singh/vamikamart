@@ -162,6 +162,9 @@ body { background:#fbfcfd; color:var(--ink); }
 .product-art { background:linear-gradient(145deg, #f2f7f8, #fff7f2); }
 .product-art span { color:var(--brand-dark); font-size:1rem; }
 .quick-product-card > a:last-child { color:var(--brand-dark); border-color:#a7d1d5; background:#f3fbfb; text-transform:none; }
+.product-buy-row { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:auto; }
+.product-buy-row .quick-price { min-width:0; }
+.product-buy-row .product-cart-control { flex:0 0 auto; }
 .shopping-guide { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px; margin:10px 0 64px; }
 .shopping-guide div { background:#15242d; color:#fff; border-radius:8px; padding:22px; }
 .shopping-guide span { width:34px; height:34px; display:grid; place-items:center; margin-bottom:14px; border-radius:50%; background:var(--accent); font-weight:900; }
@@ -984,12 +987,92 @@ img { max-width:100%; }
   color:var(--muted);
 }
 
+.order-list-item {
+  align-items:center;
+}
+
+.order-list-item > a:first-child {
+  flex:1;
+  display:grid;
+  grid-template-columns:1.2fr .8fr auto;
+  gap:14px;
+  align-items:center;
+  color:var(--ink);
+  text-decoration:none;
+}
+
+.invoice-head {
+  display:flex;
+  justify-content:space-between;
+  gap:18px;
+  align-items:flex-start;
+  margin-bottom:22px;
+}
+
+.invoice-grid {
+  display:grid;
+  grid-template-columns:repeat(2, minmax(0, 1fr));
+  gap:18px;
+}
+
+.invoice-table {
+  display:grid;
+}
+
+.invoice-row {
+  display:grid;
+  grid-template-columns:minmax(220px, 1.4fr) minmax(110px, .8fr) 70px 90px 90px;
+  gap:12px;
+  align-items:center;
+  padding:12px 0;
+  border-bottom:1px solid #e3ecee;
+}
+
+.invoice-row:last-child {
+  border-bottom:0;
+}
+
+.invoice-row-head {
+  color:var(--muted);
+  font-size:.84rem;
+  font-weight:850;
+  text-transform:uppercase;
+}
+
+.invoice-summary {
+  width:min(100%, 420px);
+  margin:22px 0 0 auto;
+}
+
+@media print {
+  .site-header,
+  .site-footer,
+  .invoice-head .btn {
+    display:none !important;
+  }
+  .invoice-page {
+    padding:0 !important;
+  }
+  .checkout-panel,
+  .summary {
+    box-shadow:none;
+  }
+}
+
 @media (max-width: 620px) {
   .auth-panel,
   .checkout-panel,
   .account-panel,
   .address-details {
     padding:18px;
+  }
+  .order-list-item > a:first-child,
+  .invoice-row,
+  .invoice-grid {
+    grid-template-columns:1fr;
+  }
+  .invoice-head {
+    display:block;
   }
 }
 

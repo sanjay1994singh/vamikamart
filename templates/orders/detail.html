@@ -6,6 +6,7 @@
     <p class="eyebrow">Order Detail</p>
     <h1>{{ object.order_number }}</h1>
     <p>Status: <strong class="order-status order-status-{{ object.status }}">{{ object.get_status_display }}</strong></p>
+    <a class="btn btn-light" href="{% url 'order-invoice' object.id %}">View Invoice</a>
   </div>
   {% if object.shipment %}
     <p>Tracking: <a href="{{ object.shipment.tracking_url }}">{{ object.shipment.awb|default:"Pending" }}</a></p>

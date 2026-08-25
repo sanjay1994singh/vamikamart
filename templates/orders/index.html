@@ -4,11 +4,14 @@
 <section class="container py-5">
   <h1>My Orders</h1>
   {% for order in object_list %}
-    <a class="line-item" href="{% url 'order-web-detail' order.id %}">
-      <strong>{{ order.order_number }}</strong>
-      <span>{{ order.status }}</span>
-      <span>₹{{ order.grand_total }}</span>
-    </a>
+    <article class="line-item order-list-item">
+      <a href="{% url 'order-web-detail' order.id %}">
+        <strong>{{ order.order_number }}</strong>
+        <span>{{ order.get_status_display }}</span>
+        <span>₹{{ order.grand_total }}</span>
+      </a>
+      <a class="btn btn-light btn-sm" href="{% url 'order-invoice' order.id %}">Invoice</a>
+    </article>
   {% empty %}
     <p>No orders yet.</p>
   {% endfor %}

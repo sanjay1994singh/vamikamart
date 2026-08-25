@@ -371,6 +371,9 @@ class CartViewSet(viewsets.ReadOnlyModelViewSet):
             order = OrderService.create_from_cart(cart, address, request.user)
         except ValidationError as exc:
             return fail("Order could not be created", {"stock": exc.messages})
+        from apps.orders.services_extra import InvoiceService
+
+        InvoiceService.create_for_order(order)
         Payment.objects.create(order=order, method=serializer.validated_data["payment_method"], amount=order.grand_total)
         payment = order.payment
         provider_data = {}

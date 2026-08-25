@@ -1,21 +1,60 @@
-<!doctype html>
-<html>
-<head><title>Invoice {{ invoice.invoice_number }}</title></head>
-<body>
-  <h1>Tax Invoice</h1>
-  <p><strong>Invoice:</strong> {{ invoice.invoice_number }}</p>
-  <p><strong>Order:</strong> {{ order.order_number }}</p>
-  <p><strong>Customer:</strong> {{ order.user.email }}</p>
-  <table border="1" cellspacing="0" cellpadding="6">
-    <tr><th>SKU</th><th>Product</th><th>Qty</th><th>Unit</th><th>Total</th></tr>
-    {% for item in order.items.all %}
-      <tr><td>{{ item.sku }}</td><td>{{ item.product_name }}</td><td>{{ item.quantity }}</td><td>{{ item.unit_price }}</td><td>{{ item.line_total }}</td></tr>
-    {% endfor %}
-  </table>
-  <p>Subtotal: {{ order.subtotal }}</p>
-  <p>Discount: {{ order.coupon_discount }}</p>
-  <p>Tax: {{ order.tax }}</p>
-  <p>Shipping: {{ order.shipping }}</p>
-  <h2>Total: {{ order.grand_total }}</h2>
-</body>
-</html>
+{% extends "base.html" %}
+{% block title %}Invoice {{ invoice.invoice_number }}{% endblock %}
+{% block content %}
+<section class="container py-5 invoice-page">
+  <div class="invoice-head">
+    <div>
+      <p class="eyebrow">Tax Invoice</p>
+      <h1>{{ invoice.invoice_number }}</h1>
+      <p>Order {{ order.order_number }} · {{ invoice.issued_at|date:"d M Y" }}</p>
+    </div>
+    <button class="btn btn-light" type="button" onclick="window.print()">Print Invoice</button>
+  </div>
+
+  <div class="invoice-grid">
+    <section class="checkout-panel">
+      <h2>Customer</h2>
+      <p><strong>{{ order.user.get_full_name|default:order.user.email }}</strong></p>
+      <p>{{ order.user.email }}</p>
+      {% if order.user.mobile_number %}<p>{{ order.user.mobile_number }}</p>{% endif %}
+    </section>
+    <section class="checkout-panel">
+      <h2>Shipping Address</h2>
+      <p><strong>{{ order.shipping_address.full_name }}</strong></p>
+      <p>{{ order.shipping_address.house }}, {{ order.shipping_address.street }}, {{ order.shipping_address.locality }}</p>
+      <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} - {{ order.shipping_address.pin_code }}</p>
+      <p>{{ order.shipping_address.phone }}</p>
+    </section>
+  </div>
+
+  <section class="checkout-panel mt-4">
+    <h2>Items</h2>
+    <div class="invoice-table">
+      <div class="invoice-row invoice-row-head">
+        <span>Product</span>
+        <span>SKU</span>
+        <span>Qty</span>
+        <span>Unit</span>
+        <span>Total</span>
+      </div>
+      {% for item in order.items.all %}
+        <div class="invoice-row">
+          <strong>{{ item.product_name }}</strong>
+          <span>{{ item.sku }}</span>
+          <span>{{ item.quantity }}</span>
+          <span>₹{{ item.unit_price }}</span>
+          <span>₹{{ item.line_total }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <aside class="summary invoice-summary">
+    <div class="summary-row"><span>Subtotal</span><strong>₹{{ order.subtotal }}</strong></div>
+    <div class="summary-row"><span>Discount</span><strong>₹{{ order.coupon_discount }}</strong></div>
+    <div class="summary-row"><span>Tax</span><strong>₹{{ order.tax }}</strong></div>
+    <div class="summary-row"><span>Shipping</span><strong>₹{{ order.shipping }}</strong></div>
+    <div class="summary-total"><span>Total</span><strong>₹{{ order.grand_total }}</strong></div>
+  </aside>
+</section>
+{% endblock %}

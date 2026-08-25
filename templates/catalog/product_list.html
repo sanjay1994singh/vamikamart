@@ -24,19 +24,21 @@
           </div>
           <small>{{ product.size }}</small>
           <h3>{{ product.name }}</h3>
-          <div class="quick-price"><strong>₹{{ product.price }}</strong>{% if product.mrp > product.price %}<del>₹{{ product.mrp }}</del>{% endif %}</div>
-          {% if product.product_id %}
-            <div class="product-cart-control js-product-cart" data-product="{{ product.product_id }}">
-              <button class="add-button js-add-cart" type="button" data-product="{{ product.product_id }}">Add</button>
-              <div class="inline-qty" hidden>
-                <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
-                <span><strong class="js-card-qty">0</strong></span>
-                <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+          <div class="product-buy-row">
+            <div class="quick-price"><strong>₹{{ product.price }}</strong>{% if product.mrp > product.price %}<del>₹{{ product.mrp }}</del>{% endif %}</div>
+            {% if product.product_id %}
+              <div class="product-cart-control js-product-cart" data-product="{{ product.product_id }}">
+                <button class="add-button js-add-cart" type="button" data-product="{{ product.product_id }}">Add</button>
+                <div class="inline-qty" hidden>
+                  <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
+                  <span><strong class="js-card-qty">0</strong></span>
+                  <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+                </div>
               </div>
-            </div>
-          {% else %}
-            <a class="add-button" href="/products/">View</a>
-          {% endif %}
+            {% else %}
+              <a class="add-button" href="/products/">View</a>
+            {% endif %}
+          </div>
         </article>
       {% endfor %}
     {% else %}
@@ -45,13 +47,15 @@
           <a class="product-art" href="{{ product.get_absolute_url }}"><span>{{ product.category.name|slice:":5"|upper }}</span></a>
           <small>{{ product.brand.name|default:product.category.name }}</small>
           <h3>{{ product.name }}</h3>
-          <div class="quick-price"><strong>₹{{ product.selling_price }}</strong>{% if product.discount_percent %}<del>₹{{ product.mrp }}</del>{% endif %}</div>
-          <div class="product-cart-control js-product-cart" data-product="{{ product.id }}">
-            <button class="add-button js-add-cart" type="button" data-product="{{ product.id }}">Add</button>
-            <div class="inline-qty" hidden>
-              <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
-              <span><strong class="js-card-qty">0</strong></span>
-              <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+          <div class="product-buy-row">
+            <div class="quick-price"><strong>₹{{ product.selling_price }}</strong>{% if product.discount_percent %}<del>₹{{ product.mrp }}</del>{% endif %}</div>
+            <div class="product-cart-control js-product-cart" data-product="{{ product.id }}">
+              <button class="add-button js-add-cart" type="button" data-product="{{ product.id }}">Add</button>
+              <div class="inline-qty" hidden>
+                <button class="js-card-minus" type="button" aria-label="Decrease quantity">-</button>
+                <span><strong class="js-card-qty">0</strong></span>
+                <button class="js-card-plus" type="button" aria-label="Increase quantity">+</button>
+              </div>
             </div>
           </div>
         </article>

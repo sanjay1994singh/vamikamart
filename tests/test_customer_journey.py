@@ -5,6 +5,7 @@ from apps.catalog.models import Category, Product
 from apps.inventory.models import Warehouse, WarehouseInventory
 from apps.orders.models import Order
 from apps.orders.models import CancellationRequest
+from apps.orders.models import Invoice
 from apps.payments.models import CODSettlement, Payment
 
 
@@ -51,6 +52,8 @@ def test_customer_cart_checkout_order_journey(api_client):
     )
     assert order_response.status_code == 200
     assert Order.objects.filter(user=user).count() == 1
+    order = Order.objects.get(user=user)
+    assert Invoice.objects.filter(order=order).exists()
     assert Payment.objects.filter(order__user=user, method=Payment.Method.COD).count() == 1
     assert CODSettlement.objects.filter(order__user=user, status="pending").count() == 1
     order = Order.objects.get(user=user)
@@ -71,6 +74,55 @@ def test_customer_cart_checkout_order_journey(api_client):
     )
     assert repeat_response.status_code == 200
     assert Order.objects.filter(user=user).count() == 1
+
+
+@pytest.mark.django_db
+def test_customer_can_view_own_invoice_but_not_other_customer_invoice(client, api_client):
+    user = User.objects.create_user(email="invoice@example.com", username="invoice", password="pass12345")
+    other_user = User.objects.create_user(email="other-invoice@example.com", username="other-invoice", password="pass12345")
+    category = Category.objects.create(name="Invoice Grocery", slug="invoice-grocery")
+    product = Product.objects.create(
+        name="Invoice Rice",
+        slug="invoice-rice",
+        sku="INVOICE-RICE",
+        category=category,
+        mrp="150.00",
+        selling_price="120.00",
+        status=Product.Status.ACTIVE,
+    )
+    warehouse = Warehouse.objects.create(name="Invoice Warehouse", code="INVOICE")
+    WarehouseInventory.objects.create(product=product, warehouse=warehouse, physical_stock=10)
+    address = Address.objects.create(
+        user=user,
+        full_name="Invoice User",
+        phone="9999999999",
+        house="1",
+        street="Market Road",
+        locality="Central",
+        city="Delhi",
+        state="Delhi",
+        pin_code="110001",
+    )
+
+    api_client.force_authenticate(user)
+    api_client.post("/api/v1/cart/add/", {"product_id": product.id, "quantity": 1}, format="json")
+    order_response = api_client.post(
+        "/api/v1/cart/place_order/",
+        {"address_id": address.id, "payment_method": "cod"},
+        format="json",
+        HTTP_IDEMPOTENCY_KEY="invoice-journey",
+    )
+    order = Order.objects.get(id=order_response.data["data"]["id"])
+    invoice = Invoice.objects.get(order=order)
+
+    client.force_login(user)
+    own_response = client.get(f"/orders/{order.id}/invoice/")
+    assert own_response.status_code == 200
+    assert invoice.invoice_number in own_response.content.decode()
+
+    client.force_login(other_user)
+    other_response = client.get(f"/orders/{order.id}/invoice/")
+    assert other_response.status_code == 404
 
 
 @pytest.mark.django_db
